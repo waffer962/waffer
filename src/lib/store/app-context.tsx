@@ -17,6 +17,7 @@ import {
   INITIAL_NOTIFICATIONS,
   INITIAL_COMPLAINTS
 } from '@/lib/mock-data';
+import { UserLog } from '@/app/api/sync/route';
 
 // Helper to play synthesized urgent audio alert using Web Audio API
 export const playUrgentAlertSound = () => {
@@ -99,7 +100,7 @@ interface AppContextType {
   updateComplaintStatus: (id: string, status: Complaint['status'], notes?: string) => void;
 
   // Auth Helpers
-  loginAsGoogle: (email?: string, name?: string, roleChoice?: 'customer' | 'store_owner') => void;
+  loginAsGoogle: (email: string, name: string, phone: string, roleChoice?: 'customer' | 'store_owner') => void;
   loginAsStaffOrAdmin: (email: string, role: 'admin' | 'staff') => void;
   loginWithEmail: (email: string, password?: string) => UserRole;
   loginAsGuest: () => void;
@@ -108,6 +109,15 @@ interface AppContextType {
   // Customer Favorites
   favorites: string[];
   toggleFavorite: (offerId: string) => void;
+
+  // Admin In-Place Editing Tools (القلم لتعديل كل شيء مباشرة)
+  isAdmin: boolean;
+  adminEditOffer: (id: string, updates: Partial<Offer>) => void;
+  adminDeleteOffer: (id: string) => void;
+  adminDeleteStore: (id: string) => void;
+  adminDeleteReservation: (id: string) => void;
+  usersList: UserLog[];
+  adminDeleteUser: (id: string, email: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -115,6 +125,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const SESSION_STORAGE_KEY = 'waffer_user_session_v1';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Always start with splash so returning users experience the brand loading
   const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('splash');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('guest');
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
@@ -125,46 +136,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
   const [favorites, setFavorites] = useState<string[]>(['offer-1', 'offer-2']);
+  const [usersList, setUsersList] = useState<UserLog[]>([]);
 
   const [isUrgentSoundMuted, setIsUrgentSoundMuted] = useState(false);
   const urgentIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastAlarmTimeRef = useRef<number>(0);
 
-  // 1. Restore Persistent Session from localStorage on Mount
+  const isAdmin = currentUserRole === 'admin';
+
+  // 1. Restore Persistent Session into state on mount (without bypassing splash)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SESSION_STORAGE_KEY);
       if (saved) {
-        const { user, role, screen } = JSON.parse(saved);
+        const { user, role } = JSON.parse(saved);
         if (user && role && role !== 'guest') {
           setCurrentUser(user);
           setCurrentUserRole(role);
-          // Only bypass splash if explicitly set
-          if (screen && screen !== 'splash') {
-            setCurrentScreen(screen);
-          } else {
-            setCurrentScreen(
-              role === 'store_owner'
-                ? 'store'
-                : role === 'admin'
-                ? 'admin'
-                : role === 'staff'
-                ? 'staff'
-                : 'customer'
-            );
-          }
         }
       }
     } catch {
-      // ignore JSON parse errors
+      // ignore
     }
   }, []);
 
   // Helper to persist session
-  const persistSession = (user: Profile | null, role: UserRole, screen: 'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff') => {
+  const persistSession = (user: Profile | null, role: UserRole) => {
     try {
       if (user && role !== 'guest') {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user, role, screen }));
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user, role }));
       } else {
         localStorage.removeItem(SESSION_STORAGE_KEY);
       }
@@ -192,6 +192,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       if (Array.isArray(data.offers) && data.offers.length > 0) {
         setOffers(data.offers);
+      }
+      if (Array.isArray(data.stores) && data.stores.length > 0) {
+        setStores(data.stores);
+      }
+      if (Array.isArray(data.users)) {
+        setUsersList(data.users);
       }
     } catch {
       // Server sync fallback
@@ -343,8 +349,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: `الكمية المتوفرة حالياً هي ${targetOffer.quantity_available} فقط.` };
     }
 
-    // Auto calculate if order >= 50% of the initial or currently available offer quantity
-    // Requirement: "عندما يحجز الزبون كمية تتجاوز 50% من إجمالي الكمية المعروضة للمنتج عند إنشاء الطلب، يصنف النظام الطلب تلقائيًا على أنه طلب كبير"
     const ratio = quantity / targetOffer.initial_quantity;
     const isLarge = ratio >= 0.5 || quantity >= Math.ceil(targetOffer.quantity_available * 0.5);
 
@@ -359,7 +363,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       offer_image: targetOffer.image_url,
       store_id: targetOffer.store_id,
       store_name: targetOffer.store_name || 'المتجر',
-      store_location: targetOffer.store_location || 'الأردن',
+      store_location: targetOffer.store_location || 'عمان، الأردن',
       store_phone: targetOffer.store_phone || '0790000000',
       customer_id: currentUser?.id,
       customer_name: customerName,
@@ -432,9 +436,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           is_large_order: isLarge
         }
       })
-    }).catch(() => {
-      // Offline fallback
-    });
+    }).catch(() => {});
 
     return { success: true, reservation: newReservation };
   };
@@ -485,15 +487,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  // Auth Methods with Real User Profiles & Persistent Sessions
-  const loginAsGoogle = (email?: string, name?: string, roleChoice: 'customer' | 'store_owner' = 'customer') => {
-    const userEmail = email?.trim() || 'user@gmail.com';
-    const userName = name?.trim() || userEmail.split('@')[0] || (roleChoice === 'store_owner' ? 'تاجر وفّر' : 'عميل وفّر');
+  // ===================== ADMIN IN-PLACE EDITING (قلم التعديل المباشر في الموقع) =====================
+  const adminEditOffer = (id: string, updates: Partial<Offer>) => {
+    setOffers((prev) => prev.map((o) => (o.id === id ? { ...o, ...updates } : o)));
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_edit_offer',
+        payload: { id, updates }
+      })
+    }).catch(() => {});
+  };
+
+  const adminDeleteOffer = (id: string) => {
+    setOffers((prev) => prev.filter((o) => o.id !== id));
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_delete_offer',
+        payload: { id }
+      })
+    }).catch(() => {});
+  };
+
+  const adminDeleteStore = (id: string) => {
+    setStores((prev) => prev.filter((s) => s.id !== id));
+    setOffers((prev) => prev.filter((o) => o.store_id !== id));
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_delete_store',
+        payload: { id }
+      })
+    }).catch(() => {});
+  };
+
+  const adminDeleteReservation = (id: string) => {
+    setReservations((prev) => prev.filter((r) => r.id !== id));
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_delete_reservation',
+        payload: { id }
+      })
+    }).catch(() => {});
+  };
+
+  const adminDeleteUser = (id: string, email: string) => {
+    setUsersList((prev) => prev.filter((u) => u.id !== id && u.email !== email));
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete_user',
+        payload: { id, email }
+      })
+    }).catch(() => {});
+  };
+
+  // Auth Methods with Real User Profiles & Database Persistence
+  const loginAsGoogle = (email: string, name: string, phone: string, roleChoice: 'customer' | 'store_owner' = 'customer') => {
+    const userEmail = email.trim();
+    const userName = name.trim();
+    const userPhone = phone.trim();
 
     const profile: Profile = {
       id: `google-${Date.now()}`,
       full_name: userName,
-      phone: '079' + Math.floor(1000000 + Math.random() * 9000000),
+      phone: userPhone,
       role: roleChoice,
       avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userName)}`
     };
@@ -502,7 +567,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentUser(profile);
     setCurrentUserRole(roleChoice);
     setCurrentScreen(targetScreen);
-    persistSession(profile, roleChoice, targetScreen);
+    persistSession(profile, roleChoice);
+
+    // Persist login to Database and sync log
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'log_user_login',
+        payload: {
+          id: profile.id,
+          email: userEmail,
+          full_name: userName,
+          phone: userPhone,
+          role: roleChoice
+        }
+      })
+    }).catch(() => {});
   };
 
   const loginWithEmail = (email: string, password?: string): UserRole => {
@@ -532,9 +613,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar_url: undefined
     };
 
+    // When Admin logs in, they go directly to the live customer view with Pencil edit mode!
     const targetScreen =
       determinedRole === 'admin'
-        ? 'admin'
+        ? 'customer'
         : determinedRole === 'staff'
         ? 'staff'
         : determinedRole === 'store_owner'
@@ -544,7 +626,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentUser(profile);
     setCurrentUserRole(determinedRole);
     setCurrentScreen(targetScreen);
-    persistSession(profile, determinedRole, targetScreen);
+    persistSession(profile, determinedRole);
+
+    // Persist login to Database and sync log
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'log_user_login',
+        payload: {
+          id: profile.id,
+          email: cleanEmail,
+          full_name: fullName,
+          phone: profile.phone,
+          role: determinedRole
+        }
+      })
+    }).catch(() => {});
 
     return determinedRole;
   };
@@ -610,7 +708,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginAsGuest,
         logout,
         favorites,
-        toggleFavorite
+        toggleFavorite,
+        isAdmin,
+        adminEditOffer,
+        adminDeleteOffer,
+        adminDeleteStore,
+        adminDeleteReservation,
+        usersList,
+        adminDeleteUser
       }}
     >
       {children}

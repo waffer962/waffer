@@ -6,27 +6,56 @@ import { Waffer3DLogo } from '@/components/ui/Waffer3DLogo';
 import { ArrowLeft } from 'lucide-react';
 
 export const SplashScreen: React.FC = () => {
-  const { setCurrentScreen } = useApp();
+  const { setCurrentScreen, currentUser, currentUserRole } = useApp();
   const [progress, setProgress] = useState(0);
 
-  // Smooth, relaxed ~3.0s intro duration
+  // Transition smoothly to user's saved screen or login
+  const proceedToNextScreen = () => {
+    let targetScreen: 'customer' | 'store' | 'staff' | 'login' = 'login';
+
+    // 1. Check in-memory store
+    if (currentUser && currentUserRole && currentUserRole !== 'guest') {
+      if (currentUserRole === 'store_owner') targetScreen = 'store';
+      else if (currentUserRole === 'staff') targetScreen = 'staff';
+      else targetScreen = 'customer';
+    } else {
+      // 2. Check localStorage session directly
+      try {
+        const saved = localStorage.getItem('waffer_user_session_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.role && parsed.role !== 'guest') {
+            if (parsed.role === 'store_owner') targetScreen = 'store';
+            else if (parsed.role === 'staff') targetScreen = 'staff';
+            else targetScreen = 'customer';
+          }
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    setCurrentScreen(targetScreen);
+  };
+
+  // Smooth, relaxed ~2.5s intro duration
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(() => setCurrentScreen('login'), 200);
+          setTimeout(proceedToNextScreen, 200);
           return 100;
         }
-        return prev + 2; // Increments by 2 every 60ms => ~3.0s
+        return prev + 2; // Increments by 2 every 50ms => ~2.5s
       });
-    }, 60);
+    }, 50);
 
     return () => clearInterval(timer);
-  }, [setCurrentScreen]);
+  }, [currentUser, currentUserRole]);
 
   const handleSkip = () => {
-    setCurrentScreen('login');
+    proceedToNextScreen();
   };
 
   return (

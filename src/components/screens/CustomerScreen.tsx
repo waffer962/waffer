@@ -28,7 +28,14 @@ import {
   UtensilsCrossed,
   ShieldCheck,
   TrendingDown,
-  ExternalLink
+  ExternalLink,
+  Edit3,
+  Trash2,
+  Users,
+  Database,
+  Settings,
+  Save,
+  Plus
 } from 'lucide-react';
 import { WafferLogo } from '@/components/ui/WafferLogo';
 
@@ -42,7 +49,15 @@ export const CustomerScreen: React.FC = () => {
     setCurrentScreen,
     logout,
     favorites,
-    toggleFavorite
+    toggleFavorite,
+    // Admin In-Place Editing Tools
+    isAdmin,
+    adminEditOffer,
+    adminDeleteOffer,
+    adminDeleteStore,
+    adminDeleteReservation,
+    usersList,
+    adminDeleteUser
   } = useApp();
 
   // Navigation tab
@@ -64,6 +79,11 @@ export const CustomerScreen: React.FC = () => {
   const [bookingSuccess, setBookingSuccess] = useState<Reservation | null>(null);
   const [bookingError, setBookingError] = useState('');
 
+  // Admin In-Place Editing State (قلم التعديل المباشر)
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [editOfferForm, setEditOfferForm] = useState<Partial<Offer>>({});
+  const [isAdminUsersDrawerOpen, setIsAdminUsersDrawerOpen] = useState(false);
+
   // Sync with current user profile
   React.useEffect(() => {
     if (currentUser) {
@@ -75,9 +95,59 @@ export const CustomerScreen: React.FC = () => {
   // Selected Invoice to view/print
   const [viewInvoice, setViewInvoice] = useState<Reservation | null>(null);
 
+  // Admin Handler functions
+  const handleStartEditOffer = (offer: Offer) => {
+    setEditingOffer(offer);
+    setEditOfferForm({
+      title: offer.title,
+      description: offer.description,
+      image_url: offer.image_url,
+      original_price: offer.original_price,
+      discounted_price: offer.discounted_price,
+      quantity_available: offer.quantity_available,
+      pickup_start: offer.pickup_start,
+      pickup_end: offer.pickup_end,
+      category: offer.category
+    });
+  };
+
+  const handleSaveOfferEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOffer) return;
+    adminEditOffer(editingOffer.id, editOfferForm);
+    setEditingOffer(null);
+  };
+
+  const handleDeleteOffer = () => {
+    if (!editingOffer) return;
+    if (confirm(`تأكيد المشرف: هل أنت متأكد من حذف العرض "${editingOffer.title}" نهائياً من الموقع؟`)) {
+      adminDeleteOffer(editingOffer.id);
+      setEditingOffer(null);
+      setSelectedOffer(null);
+    }
+  };
+
+  const handleDeleteStore = (storeId: string, storeName: string) => {
+    if (confirm(`تحذير المشرف: هل أنت متأكد من حذف متجر "${storeName}" وجميع الوجبات والعروض التابعة له نهائياً؟`)) {
+      adminDeleteStore(storeId);
+    }
+  };
+
+  const handleDeleteReservation = (resId: string, code: string) => {
+    if (confirm(`تأكيد المشرف: هل تريد حذف الطلب ${code} (أو إزالة الطلب المكرر) نهائياً من النظام؟`)) {
+      adminDeleteReservation(resId);
+    }
+  };
+
+  const handleDeleteUserAccount = (userId: string, email: string, name: string) => {
+    if (confirm(`تأكيد المشرف: هل أنت متأكد من حذف حساب المستخدم "${name}" (${email}) نهائياً من قاعدة البيانات؟`)) {
+      adminDeleteUser(userId, email);
+    }
+  };
+
   // Filtered offers
   const filteredOffers = offers.filter((o) => {
-    if (!o.is_active) return false;
+    if (!o.is_active && !isAdmin) return false;
     const matchQuery =
       o.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (o.store_name && o.store_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -105,16 +175,20 @@ export const CustomerScreen: React.FC = () => {
       return;
     }
 
-    if (!customerName || !customerPhone) {
-      setBookingError('يرجى كتابة الاسم الثلاثي ورقم الهاتف للتواصل');
+    if (!customerName || customerName.trim().length < 2) {
+      setBookingError('الاسم الكامل إجباري لإتمام الطلب');
+      return;
+    }
+    if (!customerPhone || customerPhone.trim().length < 8) {
+      setBookingError('رقم الهاتف إجباري للتواصل وتأكيد الحجز عند الاستلام (مثال: 0791234567)');
       return;
     }
 
     const result = createReservation({
       offerId: selectedOffer.id,
       quantity: reservationQty,
-      customerName,
-      customerPhone,
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
       expectedArrival,
       notes
     });
@@ -129,6 +203,41 @@ export const CustomerScreen: React.FC = () => {
   return (
     <div className="flex-1 w-full bg-slate-50 text-slate-900 flex flex-col pb-20 md:pb-12 min-h-screen">
       
+      {/* ===================== ADMIN IN-PLACE EDIT MODE BANNER ===================== */}
+      {isAdmin && (
+        <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-600 text-white px-4 py-2.5 text-xs font-bold flex flex-wrap items-center justify-between gap-3 shadow-md sticky top-0 z-50">
+          <div className="flex items-center gap-2">
+            <span className="text-base animate-bounce">✏️</span>
+            <div>
+              <span className="font-black block text-sm">وضع المشرف العام (التعديل المباشر بالقلم ✏️ مفعّل)</span>
+              <span className="text-[11px] text-amber-100 font-medium">
+                تصفح الموقع بحرية، واستخدم أيقونة القلم ✏️ لتعديل أي نص أو صورة أو سعر، وحذف المتاجر والطلبات مباشرة.
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAdminUsersDrawerOpen(true)}
+              className="bg-slate-900/40 hover:bg-slate-900/60 text-white px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition border border-white/20 cursor-pointer shadow-sm"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>سجل المستخدمين بالداتابيس ({usersList.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                setCurrentScreen('login');
+              }}
+              className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              خروج المشرف
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ===================== DESKTOP NAVIGATION BAR (Hidden on Mobile) ===================== */}
       <header className="hidden md:block w-full bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-6">
@@ -423,10 +532,24 @@ export const CustomerScreen: React.FC = () => {
                             alt={offer.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                           />
-                          {/* Discount Ribbon */}
-                          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-amber-500 text-white font-black text-xs shadow-md">
-                            وفر {discountPercent}%
-                          </div>
+                          {/* Discount Ribbon or Admin Pencil Edit Button */}
+                          {isAdmin ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartEditOffer(offer);
+                              }}
+                              className="absolute top-3 right-3 z-30 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black shadow-lg flex items-center gap-1.5 active:scale-95 transition cursor-pointer"
+                              title="تعديل هذا العرض بالقلم ✏️"
+                            >
+                              <span>✏️ تعديل العرض</span>
+                            </button>
+                          ) : (
+                            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-amber-500 text-white font-black text-xs shadow-md">
+                              وفر {discountPercent}%
+                            </div>
+                          )}
 
                           {/* Favorite button */}
                           <button
@@ -455,13 +578,29 @@ export const CustomerScreen: React.FC = () => {
                         {/* Card Content */}
                         <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                           <div>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-1 font-medium">
-                              <span className="font-bold text-slate-800">{offer.store_name}</span>
-                              <span>•</span>
-                              <span className="flex items-center gap-0.5 text-slate-600 truncate">
-                                <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
-                                <span className="truncate">{offer.store_location}</span>
-                              </span>
+                            <div className="flex items-center justify-between gap-1 text-xs text-slate-600 mb-1 font-medium">
+                              <div className="flex items-center gap-1.5 truncate">
+                                <span className="font-bold text-slate-800 truncate">{offer.store_name}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-0.5 text-slate-600 truncate">
+                                  <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+                                  <span className="truncate">{offer.store_location}</span>
+                                </span>
+                              </div>
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteStore(offer.store_id, offer.store_name || 'المتجر');
+                                  }}
+                                  className="text-[10px] text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-md font-bold transition flex items-center gap-1 shrink-0 cursor-pointer"
+                                  title="حذف هذا المتجر وكل عروضه نهائياً"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  <span>حذف المتجر</span>
+                                </button>
+                              )}
                             </div>
 
                             <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-700 transition line-clamp-1">
@@ -568,7 +707,7 @@ export const CustomerScreen: React.FC = () => {
                 <div
                   key={offer.id}
                   onClick={() => handleOpenOffer(offer)}
-                  className="p-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-3xl flex gap-3.5 items-center cursor-pointer transition shadow-xs"
+                  className="p-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-3xl flex gap-3.5 items-center cursor-pointer transition shadow-xs relative"
                 >
                   <img
                     src={offer.image_url}
@@ -576,7 +715,21 @@ export const CustomerScreen: React.FC = () => {
                     className="w-20 h-20 rounded-2xl object-cover shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-bold text-xs text-slate-900 truncate">{offer.title}</h5>
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-bold text-xs text-slate-900 truncate">{offer.title}</h5>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartEditOffer(offer);
+                          }}
+                          className="text-[10px] bg-amber-100 text-amber-800 hover:bg-amber-200 px-2 py-0.5 rounded-md font-black transition shrink-0"
+                        >
+                          ✏️ تعديل
+                        </button>
+                      )}
+                    </div>
                     <p className="text-[11px] text-slate-600 truncate mt-0.5">{offer.store_name}</p>
                     <p className="text-[10px] text-emerald-700 font-bold truncate">{offer.store_location}</p>
                     <div className="flex items-center gap-2 mt-2">
@@ -704,6 +857,24 @@ export const CustomerScreen: React.FC = () => {
                           <span>عرض وتحميل فاتورة الحجز PDF</span>
                         </button>
                       )}
+
+                      {/* Admin In-Place Order Management: Delete duplicate/fake orders */}
+                      {isAdmin && (
+                        <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                          <span className="text-[10px] text-slate-500 font-bold truncate">
+                            👤 {res.customer_name} ({res.customer_phone})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteReservation(res.id, res.booking_code)}
+                            className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0"
+                            title="حذف هذا الطلب المكرر أو الوهمي"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>حذف الطلب (المكرر)</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -769,13 +940,30 @@ export const CustomerScreen: React.FC = () => {
       {selectedOffer && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
           <div className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto text-right text-slate-900 p-6 sm:p-8 relative shadow-2xl">
-            {/* Close button */}
-            <button
-              onClick={() => setSelectedOffer(null)}
-              className="absolute top-5 left-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center z-20 transition cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {/* Close button & Admin Edit Pencil */}
+            <div className="absolute top-5 left-5 flex items-center gap-2 z-20">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const offer = selectedOffer;
+                    setSelectedOffer(null);
+                    handleStartEditOffer(offer);
+                  }}
+                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 transition cursor-pointer"
+                  title="تعديل هذا العرض بالقلم ✏️"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>تعديل بالقلم ✏️</span>
+                </button>
+              )}
+              <button
+                onClick={() => setSelectedOffer(null)}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             {bookingSuccess ? (
               /* Success screen */
@@ -913,27 +1101,31 @@ export const CustomerScreen: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Name & Phone */}
+                    {/* Name & Phone (Strictly Mandatory) */}
                     <div className="grid grid-cols-2 gap-2.5">
                       <div>
-                        <label className="block text-slate-700 font-bold mb-1">الاسم الكامل:</label>
+                        <label className="block text-slate-700 font-bold mb-1">
+                          الاسم الكامل <span className="text-red-600 font-black">* (إجباري)</span>:
+                        </label>
                         <input
                           type="text"
                           value={customerName}
                           onChange={(e) => setCustomerName(e.target.value)}
-                          placeholder="الاسم الثلاثي"
+                          placeholder="الاسم الكامل"
                           className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-emerald-600"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-slate-700 font-bold mb-1">رقم الهاتف:</label>
+                        <label className="block text-slate-700 font-bold mb-1">
+                          رقم الهاتف للتواصل <span className="text-red-600 font-black">* (إجباري)</span>:
+                        </label>
                         <input
                           type="tel"
                           value={customerPhone}
                           onChange={(e) => setCustomerPhone(e.target.value)}
-                          placeholder="07xxxxxxxx"
+                          placeholder="0791234567"
                           className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 dir-ltr text-right focus:outline-none focus:border-emerald-600"
                           required
                         />
@@ -972,9 +1164,288 @@ export const CustomerScreen: React.FC = () => {
         </div>
       )}
 
-      {/* Invoice Modal */}
-      {viewInvoice && (
-        <InvoiceModal reservation={viewInvoice} onClose={() => setViewInvoice(null)} />
+      {/* ===================== ADMIN IN-PLACE EDIT OFFER MODAL ===================== */}
+      {editingOffer && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto text-right text-slate-900">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-base">
+                  ✏️
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">تعديل بيانات العرض بالقلم</h3>
+                  <span className="text-[10px] text-slate-500">تعديل مباشر على واجهة الموقع للجميع</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingOffer(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveOfferEdit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">عنوان الوجبة / العرض:</label>
+                <input
+                  type="text"
+                  value={editOfferForm.title || ''}
+                  onChange={(e) => setEditOfferForm((prev) => ({ ...prev, title: e.target.value }))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">وصف العرض والمحتوى:</label>
+                <textarea
+                  value={editOfferForm.description || ''}
+                  onChange={(e) => setEditOfferForm((prev) => ({ ...prev, description: e.target.value }))}
+                  rows={2}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white resize-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">رابط صورة الوجبة (URL):</label>
+                <input
+                  type="url"
+                  value={editOfferForm.image_url || ''}
+                  onChange={(e) => setEditOfferForm((prev) => ({ ...prev, image_url: e.target.value }))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 dir-ltr text-right focus:outline-none focus:border-amber-500 focus:bg-white"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">السعر الأصلي (د.أ):</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={editOfferForm.original_price ?? 0}
+                    onChange={(e) => setEditOfferForm((prev) => ({ ...prev, original_price: Number(e.target.value) }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">السعر المخفض (د.أ):</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={editOfferForm.discounted_price ?? 0}
+                    onChange={(e) => setEditOfferForm((prev) => ({ ...prev, discounted_price: Number(e.target.value) }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white font-bold text-emerald-700"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">الكمية المتوفرة:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editOfferForm.quantity_available ?? 1}
+                    onChange={(e) => setEditOfferForm((prev) => ({ ...prev, quantity_available: Number(e.target.value) }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">التصنيف:</label>
+                  <select
+                    value={editOfferForm.category || 'وجبات جاهزة'}
+                    onChange={(e) => setEditOfferForm((prev) => ({ ...prev, category: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white font-medium"
+                  >
+                    {FOOD_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">بدء الاستلام:</label>
+                  <input
+                    type="text"
+                    value={editOfferForm.pickup_start || '18:00'}
+                    onChange={(e) => setEditOfferForm((prev) => ({ ...prev, pickup_start: e.target.value }))}
+                    placeholder="18:00"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">انتهاء الاستلام:</label>
+                  <input
+                    type="text"
+                    value={editOfferForm.pickup_end || '22:00'}
+                    onChange={(e) => setEditOfferForm((prev) => ({ ...prev, pickup_end: e.target.value }))}
+                    placeholder="22:00"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>حفظ التعديلات في الموقع</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDeleteOffer}
+                  className="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+                  title="حذف هذا العرض نهائياً"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>حذف العرض</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== ADMIN USERS & DATABASE DRAWER ===================== */}
+      {isAdminUsersDrawerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto text-right text-slate-900">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-lg">
+                  🗄️
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">سجل المستخدمين وقاعدة البيانات</h3>
+                  <span className="text-[11px] text-emerald-700 font-bold block">
+                    قاعدة بيانات Supabase 🌐 (جدول profiles)
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAdminUsersDrawerOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Storage Location Info Banner */}
+            <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl text-xs space-y-1">
+              <div className="flex items-center gap-2 font-black text-emerald-900">
+                <Database className="w-4 h-4 text-emerald-700" />
+                <span>أين تُحفظ بيانات المستخدمين وتواريخ الدخول؟</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                كل حساب يقوم بالدخول أو التسجيل يُحفظ مباشرة في قاعدة بيانات Supabase في جدول <code className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold">public.profiles</code> على الخادم، متضمناً: الاسم الكامل، رقم الهاتف، البريد، الدور، ووقت آخر ظهور.
+              </p>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-3 text-center text-xs">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                <span className="text-[10px] text-slate-500 block font-medium">الحسابات المحفوظة</span>
+                <span className="text-xl font-black text-slate-900">{usersList.length} مستخدم</span>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                <span className="text-[10px] text-slate-500 block font-medium">العروض النشطة</span>
+                <span className="text-xl font-black text-emerald-700">{offers.length} وجبة</span>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                <span className="text-[10px] text-slate-500 block font-medium">إجمالي الحجوزات</span>
+                <span className="text-xl font-black text-amber-600">{reservations.length} حجز</span>
+              </div>
+            </div>
+
+            {/* Users List */}
+            <div className="space-y-3">
+              <h4 className="font-bold text-xs text-slate-800 flex items-center justify-between">
+                <span>قائمة الحسابات المسجلة ({usersList.length}):</span>
+                <span className="text-[10px] text-slate-400 font-normal">يمكنك حذف أي حساب بالكامل</span>
+              </h4>
+
+              {usersList.length === 0 ? (
+                <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-500">
+                  لا توجد حسابات مسجلة بعد في السجل الحالي.
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                  {usersList.map((usr) => (
+                    <div
+                      key={usr.id}
+                      className="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-3 shadow-2xs hover:border-slate-300 transition"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                          {usr.full_name?.charAt(0) || 'م'}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-slate-900 truncate">{usr.full_name}</span>
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                              {usr.role === 'admin' ? 'مشرف 👑' : usr.role === 'store_owner' ? 'تاجر 🏪' : usr.role === 'staff' ? 'موظف 🛡️' : 'زبون 🛒'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-0.5">
+                            <span className="dir-ltr truncate">{usr.email}</span>
+                            {usr.phone && (
+                              <>
+                                <span>•</span>
+                                <span className="dir-ltr font-bold text-slate-700">{usr.phone}</span>
+                              </>
+                            )}
+                          </div>
+                          <span className="text-[9px] text-slate-400 block mt-0.5">
+                            آخر دخول: {new Date(usr.login_time).toLocaleString('ar-JO')}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteUserAccount(usr.id, usr.email, usr.full_name)}
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition cursor-pointer shrink-0"
+                        title="حذف هذا الحساب نهائياً من قاعدة البيانات"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 text-left">
+              <button
+                type="button"
+                onClick={() => setIsAdminUsersDrawerOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition cursor-pointer"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ===================== BOTTOM NAVIGATION (MOBILE ONLY - Hidden on Desktop) ===================== */}
