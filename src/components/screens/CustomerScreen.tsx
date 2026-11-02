@@ -613,7 +613,7 @@ export const CustomerScreen: React.FC = () => {
                 </div>
                 <h4 className="text-sm font-bold text-slate-900">ليس لديك أي حجوزات بعد</h4>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                  تصفح وجبات اليوم المتوفرة من أشهر المخابز والمطاعم في الأردن ووفّر ما يصل إلى 70% من النفقات.
+                  تصفح وجبات اليوم المتوفرة من أشهر المخابز والمطاعم في الأردن ووفّر مبالغ مالية حقيقية على طعامك.
                 </p>
                 <button
                   onClick={() => setActiveTab('home')}
