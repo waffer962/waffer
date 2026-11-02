@@ -231,79 +231,9 @@ export const INITIAL_OFFERS: Offer[] = [
   }
 ];
 
-export const INITIAL_RESERVATIONS: Reservation[] = [
-  {
-    id: 'res-1',
-    booking_code: 'WFR-84920',
-    offer_id: 'offer-1',
-    offer_title: 'سلة معجنات وكرواسون مخبوز اليوم',
-    offer_image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&auto=format&fit=crop&q=80',
-    store_id: 'store-1',
-    store_name: 'مخابز السفراء الحديثة',
-    store_location: 'عمان - الجبيهة',
-    store_phone: '0791234567',
-    customer_name: 'عبدالله المجالي',
-    customer_phone: '0795551234',
-    quantity: 2,
-    unit_price: 2.25,
-    total_price: 4.50,
-    expected_arrival: 'اليوم بين 8:30 و 9:00 مساءً',
-    status: 'confirmed',
-    is_large_order: false,
-    created_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: 'res-2',
-    booking_code: 'WFR-71829',
-    offer_id: 'offer-2',
-    offer_title: 'وجبة شاورما عربي دبل مع بطاطا ومثومة',
-    offer_image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600&auto=format&fit=crop&q=80',
-    store_id: 'store-2',
-    store_name: 'شاورما خان زيد',
-    store_location: 'عمان - شارع الجامعة',
-    store_phone: '0787654321',
-    customer_name: 'رنا العبادي',
-    customer_phone: '0781112233',
-    quantity: 12, // 12 out of 20 = 60% -> Large Order!
-    unit_price: 2.00,
-    total_price: 24.00,
-    expected_arrival: 'اليوم الساعة 10:15 مساءً',
-    status: 'pending',
-    is_large_order: true, // Trigger urgent repetitive alert!
-    created_at: new Date(Date.now() - 600000).toISOString()
-  }
-];
+export const INITIAL_RESERVATIONS: Reservation[] = [];
 
-export const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'notif-1',
-    title: 'تم تأكيد حجزك بنجاح! 🎉',
-    message: 'وافق مخابز السفراء الحديثة على طلبك رقم WFR-84920. فاتورتك جاهزة للاستلام نقداً.',
-    type: 'regular',
-    is_read: false,
-    created_at: new Date(Date.now() - 1800000).toISOString()
-  },
-  {
-    id: 'notif-2',
-    title: '⚠️ تنبيه عاجل: طلب حجز كمية كبيرة (60%)!',
-    message: 'قام الزبون رنا العبادي بطلب 12 وجبة من أصل 20 وجبة معروضة (تجاوز 50%). يرجى مراجعة الطلب فوراً.',
-    type: 'urgent',
-    is_read: false,
-    created_at: new Date(Date.now() - 600000).toISOString()
-  }
-];
+export const INITIAL_NOTIFICATIONS: AppNotification[] = [];
 
-export const INITIAL_COMPLAINTS: Complaint[] = [
-  {
-    id: 'comp-1',
-    reservation_id: 'res-1',
-    user_name: 'أحمد التميمي',
-    user_phone: '0791122334',
-    store_name: 'مخابز السفراء الحديثة',
-    subject: 'تأخر تسليم الطلب 15 دقيقة',
-    description: 'وصلت في الموعد المحدد ولكن تم تجهيز العرض بعد ربع ساعة من وصولي.',
-    status: 'investigating',
-    staff_notes: 'تم التواصل مع المتجر للتأكيد على تجهيز السلة فور تأكيد الحجز.',
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  }
-];
+export const INITIAL_COMPLAINTS: Complaint[] = [];
+

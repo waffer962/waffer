@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary-green: #16a34a;
+  --primary-dark: #15803d;
+  --accent-orange: #ea580c;
 }
 
 body {
@@ -13,7 +16,7 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Hide scrollbar for clean mobile experience */
+/* Clean, modern scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

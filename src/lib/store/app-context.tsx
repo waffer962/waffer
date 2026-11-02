@@ -100,6 +100,7 @@ interface AppContextType {
   // Auth Helpers
   loginAsGoogle: (roleChoice?: 'customer' | 'store_owner') => void;
   loginAsStaffOrAdmin: (email: string, role: 'admin' | 'staff') => void;
+  loginWithEmail: (email: string, password?: string) => UserRole;
   loginAsGuest: () => void;
   logout: () => void;
 
@@ -111,7 +112,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('splash');
+  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('login');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('guest');
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
 
@@ -378,29 +379,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
     };
     setCurrentUser(profile);
+    setCurrentUserRole('customer');
+    setCurrentScreen('customer');
+  };
 
-    if (roleChoice === 'customer') {
-      setCurrentUserRole('customer');
-      setCurrentScreen('customer');
-    } else if (roleChoice === 'store_owner') {
-      setCurrentUserRole('store_owner');
-      setCurrentScreen('store');
+  const loginWithEmail = (email: string, password?: string): UserRole => {
+    const cleanEmail = email.trim().toLowerCase();
+    let determinedRole: UserRole = 'customer';
+    let fullName = 'عميل وفّر';
+
+    if (cleanEmail === 'admin@waffer.jo' || cleanEmail.includes('admin')) {
+      determinedRole = 'admin';
+      fullName = 'الأدمن الرئيسي - وفّر';
+    } else if (cleanEmail === 'staff@waffer.jo' || cleanEmail === 'support@waffer.jo' || cleanEmail.includes('staff')) {
+      determinedRole = 'staff';
+      fullName = 'موظف الشكاوى وإدارة الطلبات';
+    } else if (cleanEmail === 'store@waffer.jo' || cleanEmail.includes('store')) {
+      determinedRole = 'store_owner';
+      fullName = 'صاحب متجر - مخابز السفراء';
     } else {
-      setCurrentScreen('role_select');
+      determinedRole = 'customer';
+      fullName = email.split('@')[0] || 'عميل وفّر';
     }
+
+    const profile: Profile = {
+      id: `${determinedRole}-${Date.now()}`,
+      full_name: fullName,
+      phone: determinedRole === 'admin' ? '0790000001' : '0791234567',
+      role: determinedRole,
+      avatar_url: undefined
+    };
+
+    setCurrentUser(profile);
+    setCurrentUserRole(determinedRole);
+    setCurrentScreen(
+      determinedRole === 'admin'
+        ? 'admin'
+        : determinedRole === 'staff'
+        ? 'staff'
+        : determinedRole === 'store_owner'
+        ? 'store'
+        : 'customer'
+    );
+
+    return determinedRole;
   };
 
   const loginAsStaffOrAdmin = (email: string, role: 'admin' | 'staff') => {
-    const profile: Profile = {
-      id: `${role}-1`,
-      full_name: role === 'admin' ? 'الأدمن الرئيسي - وفّر' : 'موظف الشكاوى والتتبع',
-      phone: '0790000001',
-      role,
-      avatar_url: undefined
-    };
-    setCurrentUser(profile);
-    setCurrentUserRole(role);
-    setCurrentScreen(role === 'admin' ? 'admin' : 'staff');
+    loginWithEmail(email);
   };
 
   const loginAsGuest = () => {
@@ -455,6 +481,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateComplaintStatus,
         loginAsGoogle,
         loginAsStaffOrAdmin,
+        loginWithEmail,
         loginAsGuest,
         logout,
         favorites,

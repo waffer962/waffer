@@ -49,7 +49,6 @@ export const StoreScreen: React.FC = () => {
     setIsUrgentSoundMuted,
     notifications,
     updateStoreDetails,
-    setCurrentScreen,
     logout
   } = useApp();
 
@@ -58,45 +57,48 @@ export const StoreScreen: React.FC = () => {
   >('dashboard');
 
   // New Store Registration Form State
-  const [isRegisteringStore, setIsRegisteringStore] = useState(!currentStore);
+  const [isRegisteringStore, setIsRegisteringStore] = useState(false);
   const [storeName, setStoreName] = useState('');
-  const [storeLogo, setStoreLogo] = useState('https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=80');
+  const [storeType, setStoreType] = useState<Store['store_type']>('مخبز');
+  const [ownerName, setOwnerName] = useState('');
   const [governorate, setGovernorate] = useState('عمان');
   const [area, setArea] = useState('');
-  const [phone, setPhone] = useState('0791234567');
+  const [phone, setPhone] = useState('');
   const [phoneSecondary, setPhoneSecondary] = useState('');
-  const [storeType, setStoreType] = useState<Store['store_type']>('مخبز');
   const [description, setDescription] = useState('');
-  const [workingDays, setWorkingDays] = useState('يومياً');
   const [workingHours, setWorkingHours] = useState('08:00 ص - 11:00 م');
-  const [ownerName, setOwnerName] = useState('أحمد الخالد');
   const [registeredSuccess, setRegisteredSuccess] = useState(false);
 
   // New Offer Form State
   const [offerTitle, setOfferTitle] = useState('');
-  const [offerCategory, setOfferCategory] = useState('مخابز ومعجنات');
   const [offerDescription, setOfferDescription] = useState('');
-  const [offerImage, setOfferImage] = useState('https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&auto=format&fit=crop&q=80');
-  const [originalPrice, setOriginalPrice] = useState(5.0);
-  const [discountedPrice, setDiscountedPrice] = useState(2.25);
-  const [quantity, setQuantity] = useState(10);
+  const [offerImage, setOfferImage] = useState(
+    'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'
+  );
+  const [originalPrice, setOriginalPrice] = useState<number | ''>(5.0);
+  const [discountedPrice, setDiscountedPrice] = useState<number | ''>(2.25);
+  const [quantity, setQuantity] = useState<number | ''>(10);
   const [pickupStart, setPickupStart] = useState('19:00');
   const [pickupEnd, setPickupEnd] = useState('22:30');
+  const [offerCategory, setOfferCategory] = useState('مخابز ومعجنات');
   const [offerSuccessMsg, setOfferSuccessMsg] = useState('');
 
-  // Handle Store Registration
+  // Handle Register Store
   const handleRegisterStore = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!storeName || !ownerName || !phone) return;
+
     addStore({
       name: storeName,
-      logo_url: storeLogo,
+      logo_url:
+        'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=80',
       governorate,
       area,
       phone,
-      phone_secondary: phoneSecondary || undefined,
+      phone_secondary: phoneSecondary,
       store_type: storeType,
       description,
-      working_days: workingDays,
+      working_days: 'طيلة أيام الأسبوع',
       working_hours: workingHours,
       owner_name: ownerName,
       is_accepting_orders: true
@@ -143,173 +145,12 @@ export const StoreScreen: React.FC = () => {
   const pendingReservations = reservations.filter((r) => r.status === 'pending');
   const storeOffers = offers.filter((o) => currentStore ? o.store_id === currentStore.id : true);
 
-  if (isRegisteringStore) {
-    return (
-      <div className="flex-1 w-full bg-slate-950 text-white flex items-center justify-center p-4 sm:p-8">
-        <div className="max-w-2xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-          <div className="flex justify-between items-center pb-4 border-b border-slate-800">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">
-                <StoreIcon className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-black text-base text-white">تسجيل متجر جديد في وفّر</h3>
-                <p className="text-xs text-slate-400">انضم لأصحاب المتاجر والمخابز وساهم في تقليل الهدر وزيادة المبيعات</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setCurrentScreen('role_select')}
-              className="text-xs text-slate-400 hover:text-white"
-            >
-              إلغاء
-            </button>
-          </div>
-
-          {registeredSuccess ? (
-            <div className="text-center py-12 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center mx-auto text-3xl animate-bounce">
-                ✓
-              </div>
-              <h3 className="text-xl font-bold text-white">تم إرسال طلب المتجر للإدارة بنجاح!</h3>
-              <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                يقوم الأدمن الرئيسي بمراجعة وثائق المتجر واعتماده لتتمكن من البدء بنشر عروض الطعام الفائض فوراً.
-              </p>
-              <div className="pt-4">
-                <button
-                  onClick={() => setIsRegisteringStore(false)}
-                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-teal-950/50"
-                >
-                  الدخول للوحة التحكم التجريبية للمتجر
-                </button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleRegisterStore} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-300 font-bold mb-1">اسم المتجر (المخبز أو المطعم):</label>
-                <input
-                  type="text"
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  placeholder="مثال: مخابز الريان الحديثة"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">نوع المتجر:</label>
-                  <select
-                    value={storeType}
-                    onChange={(e) => setStoreType(e.target.value as Store['store_type'])}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
-                  >
-                    <option value="مخبز">مخبز ومعجنات</option>
-                    <option value="مطعم">مطعم شرقي / غربي</option>
-                    <option value="وجبات سريعة">وجبات سريعة</option>
-                    <option value="حلويات">حلويات</option>
-                    <option value="سوبرماركت">سوبرماركت / بقالة</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">اسم مالك المتجر:</label>
-                  <input
-                    type="text"
-                    value={ownerName}
-                    onChange={(e) => setOwnerName(e.target.value)}
-                    placeholder="الاسم الكامل للمالك"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">المحافظة:</label>
-                  <select
-                    value={governorate}
-                    onChange={(e) => setGovernorate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
-                  >
-                    {JORDAN_GOVERNORATES.map((g) => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">المنطقة والحي:</label>
-                  <input
-                    type="text"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    placeholder="مثال: الجبيهة، شارع البلدية"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">رقم الهاتف الأساسي:</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="079xxxxxxx"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white dir-ltr text-right focus:outline-none"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">رقم هاتف ثانٍ (اختياري):</label>
-                  <input
-                    type="tel"
-                    value={phoneSecondary}
-                    onChange={(e) => setPhoneSecondary(e.target.value)}
-                    placeholder="06xxxxxxx"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white dir-ltr text-right focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-bold mb-1">وصف المتجر وطبيعة منتجاته:</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={2}
-                  placeholder="نبذة عن المخبز أو المطعم والأطعمة التي يقدمها"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full py-3.5 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-black text-sm shadow-xl shadow-teal-950/60 transition active:scale-[0.98]"
-                >
-                  إرسال الطلب إلى الإدارة للاعتماد
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 w-full bg-slate-950 text-slate-100 flex flex-col pb-16">
+    <div className="flex-1 w-full bg-slate-50 text-slate-900 flex flex-col pb-16 min-h-screen">
       
       {/* Top Urgent Alert Banner (>50% Large Order Requirement) */}
       {hasPendingUrgentOrders && (
-        <div className="w-full bg-gradient-to-r from-red-650 via-red-600 to-rose-700 text-white px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+        <div className="w-full bg-red-600 text-white px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
           <div className="flex items-center gap-2.5 text-xs sm:text-sm font-black">
             <AlertTriangle className="w-5 h-5 shrink-0 text-amber-300 animate-bounce" />
             <span>
@@ -320,14 +161,14 @@ export const StoreScreen: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsUrgentSoundMuted(!isUrgentSoundMuted)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-800/80 hover:bg-red-850 text-white text-xs font-bold transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-750 hover:bg-red-800 text-white text-xs font-bold transition cursor-pointer"
             >
               {isUrgentSoundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               <span>{isUrgentSoundMuted ? 'تشغيل الصوت' : 'كتم الصوت'}</span>
             </button>
             <button
               onClick={() => setActiveTab('orders')}
-              className="px-4 py-1.5 bg-white text-red-700 rounded-xl text-xs font-black shadow-md transition active:scale-95"
+              className="px-4 py-1.5 bg-white text-red-700 rounded-xl text-xs font-black shadow-xs transition active:scale-95 cursor-pointer"
             >
               مراجعة الطلبات العاجلة
             </button>
@@ -336,22 +177,22 @@ export const StoreScreen: React.FC = () => {
       )}
 
       {/* Store Header Full Width */}
-      <div className="w-full bg-slate-900 border-b border-slate-800">
+      <div className="w-full bg-white border-b border-slate-200 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img
               src={currentStore?.logo_url}
               alt={currentStore?.name}
-              className="w-12 h-12 rounded-2xl object-cover border border-slate-700 shadow-md"
+              className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shadow-2xs"
             />
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-base text-white">{currentStore?.name || 'متجري'}</h3>
-                <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-bold">
+                <h3 className="font-black text-base text-slate-900">{currentStore?.name || 'متجري'}</h3>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                   متجر معتمد ✅
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-600 mt-0.5 font-medium">
                 {currentStore?.governorate} - {currentStore?.area} • {currentStore?.store_type}
               </p>
             </div>
@@ -360,60 +201,68 @@ export const StoreScreen: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setActiveTab('add_offer')}
-              className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-teal-950/40"
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>إضافة عرض جديد</span>
+            </button>
+
+            <button
+              onClick={logout}
+              className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
+              title="تسجيل الخروج"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Store Navigation Bar Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold border-t border-slate-850 pt-2 pb-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold border-t border-slate-100 pt-2 pb-2">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 rounded-xl transition ${
-              activeTab === 'dashboard' ? 'bg-teal-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`px-4 py-2 rounded-xl transition cursor-pointer ${
+              activeTab === 'dashboard' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            الرئيسية
+            لوحة المتجر
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-xl transition relative ${
-              activeTab === 'orders' ? 'bg-teal-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`px-4 py-2 rounded-xl transition relative cursor-pointer ${
+              activeTab === 'orders' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             الطلبات الواردة
             {pendingReservations.length > 0 && (
-              <span className="mr-2 px-1.5 py-0.2 rounded-full bg-red-500 text-white text-[10px] font-bold">
+              <span className="mr-2 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold">
                 {pendingReservations.length} جديد
               </span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('my_offers')}
-            className={`px-4 py-2 rounded-xl transition ${
-              activeTab === 'my_offers' ? 'bg-teal-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`px-4 py-2 rounded-xl transition cursor-pointer ${
+              activeTab === 'my_offers' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             عروضي ({storeOffers.length})
           </button>
           <button
             onClick={() => setActiveTab('stats')}
-            className={`px-4 py-2 rounded-xl transition ${
-              activeTab === 'stats' ? 'bg-teal-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`px-4 py-2 rounded-xl transition cursor-pointer ${
+              activeTab === 'stats' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            السجل والإحصائيات
+            السجل المالي
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 rounded-xl transition ${
-              activeTab === 'settings' ? 'bg-teal-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`px-4 py-2 rounded-xl transition cursor-pointer ${
+              activeTab === 'settings' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            إعدادات المتجر
+            بيانات المتجر
           </button>
         </div>
       </div>
@@ -426,65 +275,65 @@ export const StoreScreen: React.FC = () => {
           <div className="space-y-6">
             {/* 4 Wide KPI Cards in a Row on Laptop/PC */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-              <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-sm">
-                <span className="text-slate-400 block mb-1">طلبات بانتظار الرد</span>
+              <div className="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">طلبات بانتظار الرد</span>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-3xl font-black text-amber-400">{pendingReservations.length}</span>
-                  <span className="text-xs text-amber-500/90 font-bold">تحتاج موافقتك</span>
+                  <span className="text-3xl font-black text-amber-600">{pendingReservations.length}</span>
+                  <span className="text-xs text-amber-700 font-bold">تحتاج موافقتك</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-sm">
-                <span className="text-slate-400 block mb-1">العروض النشطة الحالية</span>
+              <div className="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">العروض النشطة الحالية</span>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-3xl font-black text-teal-400">
+                  <span className="text-3xl font-black text-emerald-700">
                     {storeOffers.filter((o) => o.is_active).length}
                   </span>
-                  <span className="text-xs text-teal-400/90 font-bold">معروضة للزبائن</span>
+                  <span className="text-xs text-emerald-700 font-bold">معروضة للزبائن</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-sm">
-                <span className="text-slate-400 block mb-1">إجمالي الحجوزات</span>
+              <div className="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">إجمالي الحجوزات</span>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-3xl font-black text-white">{reservations.length}</span>
-                  <span className="text-xs text-slate-400 font-bold">طلب حجز</span>
+                  <span className="text-3xl font-black text-slate-900">{reservations.length}</span>
+                  <span className="text-xs text-slate-600 font-bold">طلب حجز</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-sm">
-                <span className="text-slate-400 block mb-1">المبيعات المستلمة نقدًا</span>
+              <div className="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">المبيعات المستلمة نقدًا</span>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-3xl font-black text-emerald-400">{totalRevenue.toFixed(2)}</span>
-                  <span className="text-xs text-emerald-400 font-bold">دينار أردني</span>
+                  <span className="text-3xl font-black text-emerald-700">{totalRevenue.toFixed(2)}</span>
+                  <span className="text-xs text-emerald-700 font-bold">دينار أردني</span>
                 </div>
               </div>
             </div>
 
             {/* Pending Requests Table / Cards on Desktop */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-xs">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                 <div>
-                  <h4 className="text-base font-bold text-white flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-amber-400" />
+                  <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-amber-600" />
                     <span>الطلبات الواردة الجديدة (تحتاج موافقة المتجر)</span>
                   </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5 font-medium">
                     راجع الكميات المطلوبة ووافق عليها لتصل الفاتورة للزبون
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className="text-xs text-teal-400 font-bold hover:underline"
+                  className="text-xs text-emerald-700 font-bold hover:underline cursor-pointer"
                 >
                   عرض جميع الطلبات
                 </button>
               </div>
 
               {pendingReservations.length === 0 ? (
-                <div className="py-12 text-center text-xs text-slate-400 space-y-2">
+                <div className="py-12 text-center text-xs text-slate-600 space-y-2">
                   <div className="text-3xl">👍</div>
-                  <p className="font-bold text-white">لا توجد طلبات جديدة بانتظار الرد حالياً</p>
+                  <p className="font-bold text-slate-900 text-sm">لا توجد طلبات جديدة بانتظار الرد حالياً</p>
                   <p className="text-slate-500">تم الرد على كافة الحجوزات الواردة لمتجرك.</p>
                 </div>
               ) : (
@@ -492,12 +341,12 @@ export const StoreScreen: React.FC = () => {
                   {pendingReservations.map((r) => (
                     <div
                       key={r.id}
-                      className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3 text-xs"
+                      className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 text-xs"
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <span className="font-bold text-white text-sm block">{r.customer_name}</span>
-                          <span className="text-xs text-slate-400 font-mono">{r.booking_code}</span>
+                          <span className="font-bold text-slate-900 text-sm block">{r.customer_name}</span>
+                          <span className="text-xs text-slate-600 font-mono">{r.booking_code}</span>
                         </div>
                         {r.is_large_order && (
                           <span className="px-2.5 py-1 rounded-xl bg-red-600 text-white text-[10px] font-bold">
@@ -506,30 +355,30 @@ export const StoreScreen: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="p-3 bg-slate-900 rounded-xl space-y-1">
-                        <div className="flex justify-between font-bold text-white">
+                      <div className="p-3 bg-white rounded-xl space-y-1 border border-slate-200">
+                        <div className="flex justify-between font-bold text-slate-900">
                           <span>{r.offer_title}</span>
                           <span>{r.quantity} قطع</span>
                         </div>
-                        <div className="flex justify-between text-emerald-400 font-bold text-xs">
+                        <div className="flex justify-between text-emerald-700 font-bold text-xs">
                           <span>المجموع نقدًا:</span>
                           <span>{r.total_price.toFixed(2)} د.أ</span>
                         </div>
-                        <div className="text-[11px] text-slate-400 pt-1">
-                          وقت الحضور: <span className="text-white">{r.expected_arrival}</span>
+                        <div className="text-[11px] text-slate-600 pt-1">
+                          وقت الحضور: <span className="text-slate-900 font-medium">{r.expected_arrival}</span>
                         </div>
                       </div>
 
                       <div className="flex gap-2 pt-1">
                         <button
                           onClick={() => updateReservationStatus(r.id, 'confirmed')}
-                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition"
+                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition cursor-pointer"
                         >
                           قبول الطلب
                         </button>
                         <button
                           onClick={() => updateReservationStatus(r.id, 'rejected')}
-                          className="py-2 px-3 bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-900 rounded-xl text-xs font-bold transition"
+                          className="py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition cursor-pointer"
                         >
                           رفض
                         </button>
@@ -546,41 +395,41 @@ export const StoreScreen: React.FC = () => {
         {activeTab === 'add_offer' && (
           <div className="max-w-3xl mx-auto space-y-4">
             <div>
-              <h3 className="text-xl font-black text-white flex items-center gap-2">
-                <PlusCircle className="w-5 h-5 text-teal-400" />
+              <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-emerald-600" />
                 <span>إضافة إعلان بيع طعام فائض جديد</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-600 mt-0.5 font-medium">
                 أدخل تفاصيل الطعام الفائض الصالح للاستهلاك اليوم وحدد السعر المخفض
               </p>
             </div>
 
             {offerSuccessMsg && (
-              <div className="p-4 bg-teal-950/80 border border-teal-700 rounded-2xl text-teal-300 text-xs text-center font-bold">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs text-center font-bold">
                 {offerSuccessMsg}
               </div>
             )}
 
-            <form onSubmit={handleAddOffer} className="space-y-4 bg-slate-900 border border-slate-800 p-6 rounded-3xl text-xs shadow-xl">
+            <form onSubmit={handleAddOffer} className="space-y-4 bg-white border border-slate-200 p-6 rounded-3xl text-xs shadow-xs">
               <div>
-                <label className="block text-slate-300 font-bold mb-1.5">اسم الوجبة أو السلة:</label>
+                <label className="block text-slate-700 font-bold mb-1.5">اسم الوجبة أو السلة:</label>
                 <input
                   type="text"
                   value={offerTitle}
                   onChange={(e) => setOfferTitle(e.target.value)}
                   placeholder="مثال: سلة معجنات مشكلة ومخبوزات المساء الطازجة"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-teal-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1.5">تصنيف الطعام:</label>
+                  <label className="block text-slate-700 font-bold mb-1.5">تصنيف الطعام:</label>
                   <select
                     value={offerCategory}
                     onChange={(e) => setOfferCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none font-medium"
                   >
                     <option value="مخابز ومعجنات">مخابز ومعجنات</option>
                     <option value="وجبات ومطاعم">وجبات ومطاعم شرقية</option>
@@ -591,51 +440,51 @@ export const StoreScreen: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1.5">الكمية المتوفرة للبيع:</label>
+                  <label className="block text-slate-700 font-bold mb-1.5">الكمية المتوفرة للبيع:</label>
                   <input
                     type="number"
                     min="1"
                     value={quantity}
                     onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1.5">وصف المنتج ومحتويات السلة:</label>
+                <label className="block text-slate-700 font-bold mb-1.5">وصف المنتج ومحتويات السلة:</label>
                 <textarea
                   value={offerDescription}
                   onChange={(e) => setOfferDescription(e.target.value)}
                   rows={3}
                   placeholder="محتويات السلة وصلاحيتها للاستهلاك الفوري الليلة..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1.5">السعر الأصلي المعتاد (دينار أردني):</label>
+                  <label className="block text-slate-700 font-bold mb-1.5">السعر الأصلي المعتاد (دينار أردني):</label>
                   <input
                     type="number"
                     step="0.25"
                     value={originalPrice}
                     onChange={(e) => setOriginalPrice(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-emerald-400 font-bold mb-1.5">سعر البيع المخفض (دينار أردني):</label>
+                  <label className="block text-emerald-700 font-bold mb-1.5">سعر البيع المخفض (دينار أردني):</label>
                   <input
                     type="number"
                     step="0.25"
                     value={discountedPrice}
                     onChange={(e) => setDiscountedPrice(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-emerald-500/60 rounded-xl p-3 text-white font-bold focus:outline-none"
+                    className="w-full bg-slate-50 border border-emerald-400 rounded-xl p-3 text-slate-900 font-bold focus:outline-none"
                     required
                   />
                 </div>
@@ -643,23 +492,23 @@ export const StoreScreen: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1.5">بداية وقت الاستلام:</label>
+                  <label className="block text-slate-700 font-bold mb-1.5">بداية وقت الاستلام:</label>
                   <input
                     type="time"
                     value={pickupStart}
                     onChange={(e) => setPickupStart(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1.5">نهاية وقت الاستلام:</label>
+                  <label className="block text-slate-700 font-bold mb-1.5">نهاية وقت الاستلام:</label>
                   <input
                     type="time"
                     value={pickupEnd}
                     onChange={(e) => setPickupEnd(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none"
                     required
                   />
                 </div>
@@ -668,7 +517,7 @@ export const StoreScreen: React.FC = () => {
               <div className="pt-3">
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-black text-sm shadow-xl shadow-teal-950/60 transition active:scale-[0.98]"
+                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm shadow-xs transition active:scale-[0.98] cursor-pointer"
                 >
                   نشر العرض في المنصة فوراً
                 </button>
@@ -682,118 +531,124 @@ export const StoreScreen: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-black text-white flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-teal-400" />
+                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-emerald-600" />
                   <span>إدارة طلبات الحجز الواردة</span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-600 mt-0.5 font-medium">
                   جميع الحجوزات تتطلب موافقتك اليدوية لضمان توفر الكميات قبل وصول الزبون
                 </p>
               </div>
-              <span className="text-xs font-bold px-3 py-1 bg-slate-900 border border-slate-800 rounded-xl text-teal-400 font-mono">
+              <span className="text-xs font-bold px-3 py-1 bg-white border border-slate-200 rounded-xl text-emerald-700 font-mono">
                 {reservations.length} طلب إجمالي
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {reservations.map((res) => {
-                const isPending = res.status === 'pending';
-                const isConfirmed = res.status === 'confirmed';
-                const isCompleted = res.status === 'completed';
+            {reservations.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+                <p className="text-xs text-slate-500">لا توجد طلبات مسجلة بعد. عند حجز الزبائن ستظهر هنا فوراً مع التنبيه الصوتي.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {reservations.map((res) => {
+                  const isPending = res.status === 'pending';
+                  const isConfirmed = res.status === 'confirmed';
+                  const isCompleted = res.status === 'completed';
 
-                return (
-                  <div
-                    key={res.id}
-                    className={`p-5 bg-slate-900 border rounded-3xl space-y-3.5 text-xs shadow-md transition ${
-                      res.is_large_order && isPending
-                        ? 'border-red-500 shadow-xl shadow-red-500/10'
-                        : 'border-slate-800'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-white text-base">{res.customer_name}</span>
-                          <span className="text-slate-400 font-mono text-xs">({res.booking_code})</span>
+                  return (
+                    <div
+                      key={res.id}
+                      className={`p-5 bg-white border rounded-3xl space-y-3.5 text-xs shadow-xs transition ${
+                        res.is_large_order && isPending
+                          ? 'border-red-400 bg-red-50/20'
+                          : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-base">{res.customer_name}</span>
+                            <span className="text-slate-600 font-mono text-xs">({res.booking_code})</span>
+                          </div>
+                          <p className="text-xs text-slate-600 dir-ltr text-right mt-1 font-medium">{res.customer_phone}</p>
                         </div>
-                        <p className="text-xs text-slate-400 dir-ltr text-right mt-1">{res.customer_phone}</p>
-                      </div>
 
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          isConfirmed
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : isPending
-                            ? 'bg-amber-500/20 text-amber-400'
-                            : isCompleted
-                            ? 'bg-blue-500/20 text-blue-400'
-                            : 'bg-red-500/20 text-red-400'
-                        }`}
-                      >
-                        {isConfirmed
-                          ? 'موافق عليه ✅'
-                          : isPending
-                          ? 'بانتظار الموافقة ⏳'
-                          : isCompleted
-                          ? 'تم التسليم 💰'
-                          : 'مرفوض ❌'}
-                      </span>
-                    </div>
-
-                    {res.is_large_order && (
-                      <div className="p-3 bg-red-950/80 border border-red-800 rounded-2xl text-red-300 text-xs font-bold flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
-                        <span>طلب كمية كبيرة تتجاوز 50% من الوجبات المعروضة!</span>
-                      </div>
-                    )}
-
-                    <div className="p-3 bg-slate-950 rounded-2xl text-slate-300 space-y-1.5 border border-slate-850">
-                      <div className="flex justify-between font-bold text-white">
-                        <span>{res.offer_title}</span>
-                        <span>الكمية: {res.quantity} قطع</span>
-                      </div>
-                      <div className="flex justify-between text-slate-400 text-xs">
-                        <span>المبلغ الإجمالي (نقدًا):</span>
-                        <span className="font-black text-emerald-400 text-sm">{res.total_price.toFixed(2)} د.أ</span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-850">
-                        موعد الحضور: <span className="text-white font-medium">{res.expected_arrival}</span>
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="pt-1">
-                      {isPending && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => updateReservationStatus(res.id, 'confirmed')}
-                            className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition shadow-md"
-                          >
-                            موافقة على الحجز
-                          </button>
-                          <button
-                            onClick={() => updateReservationStatus(res.id, 'rejected')}
-                            className="py-2.5 px-4 bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-900 rounded-xl font-bold text-xs transition"
-                          >
-                            رفض
-                          </button>
-                        </div>
-                      )}
-
-                      {isConfirmed && (
-                        <button
-                          onClick={() => updateReservationStatus(res.id, 'completed')}
-                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-md"
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            isConfirmed
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : isPending
+                              ? 'bg-amber-100 text-amber-800'
+                              : isCompleted
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
                         >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>تم التسليم واستلام المبلغ نقدًا 💵</span>
-                        </button>
+                          {isConfirmed
+                            ? 'موافق عليه ✅'
+                            : isPending
+                            ? 'بانتظار الموافقة ⏳'
+                            : isCompleted
+                            ? 'تم التسليم 💰'
+                            : 'مرفوض ❌'}
+                        </span>
+                      </div>
+
+                      {res.is_large_order && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs font-bold flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                          <span>طلب كمية كبيرة تتجاوز 50% من الوجبات المعروضة!</span>
+                        </div>
                       )}
+
+                      <div className="p-3 bg-slate-50 rounded-2xl text-slate-700 space-y-1.5 border border-slate-200">
+                        <div className="flex justify-between font-bold text-slate-900">
+                          <span>{res.offer_title}</span>
+                          <span>الكمية: {res.quantity} قطع</span>
+                        </div>
+                        <div className="flex justify-between text-slate-600 text-xs">
+                          <span>المبلغ الإجمالي (نقدًا):</span>
+                          <span className="font-black text-emerald-700 text-sm">{res.total_price.toFixed(2)} د.أ</span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 pt-1 border-t border-slate-200">
+                          موعد الحضور: <span className="text-slate-900 font-medium">{res.expected_arrival}</span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="pt-1">
+                        {isPending && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => updateReservationStatus(res.id, 'confirmed')}
+                              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition shadow-xs cursor-pointer"
+                            >
+                              موافقة على الحجز
+                            </button>
+                            <button
+                              onClick={() => updateReservationStatus(res.id, 'rejected')}
+                              className="py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold text-xs transition cursor-pointer"
+                            >
+                              رفض
+                            </button>
+                          </div>
+                        )}
+
+                        {isConfirmed && (
+                          <button
+                            onClick={() => updateReservationStatus(res.id, 'completed')}
+                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>تم التسليم واستلام المبلغ نقدًا 💵</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -802,17 +657,17 @@ export const StoreScreen: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-black text-white flex items-center gap-2">
-                  <Tag className="w-5 h-5 text-teal-400" />
+                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-emerald-600" />
                   <span>إدارة العروض المنشورة لمتجرك</span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-600 mt-0.5 font-medium">
                   تحكم بحالة العرض أو أعد نشره بضغطة زر واحدة لتوفير الوقت
                 </p>
               </div>
               <button
                 onClick={() => setActiveTab('add_offer')}
-                className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>إضافة عرض جديد</span>
@@ -823,7 +678,7 @@ export const StoreScreen: React.FC = () => {
               {storeOffers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="p-4 bg-slate-900 border border-slate-800 rounded-3xl flex flex-col justify-between gap-4 text-xs shadow-md"
+                  className="p-4 bg-white border border-slate-200 rounded-3xl flex flex-col justify-between gap-4 text-xs shadow-xs"
                 >
                   <div className="flex gap-3.5 items-start">
                     <img
@@ -833,23 +688,23 @@ export const StoreScreen: React.FC = () => {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <span className={`w-2 h-2 rounded-full ${offer.is_active ? 'bg-emerald-400' : 'bg-slate-600'}`} />
-                        <h5 className="font-bold text-sm text-white truncate">{offer.title}</h5>
+                        <span className={`w-2 h-2 rounded-full ${offer.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                        <h5 className="font-bold text-sm text-slate-900 truncate">{offer.title}</h5>
                       </div>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-600 font-medium">
                         متبقي {offer.quantity_available} من {offer.initial_quantity} قطع
                       </p>
-                      <p className="font-black text-emerald-400 text-sm mt-1">{offer.discounted_price.toFixed(2)} د.أ</p>
+                      <p className="font-black text-emerald-700 text-sm mt-1">{offer.discounted_price.toFixed(2)} د.أ</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
                     <button
                       onClick={() => toggleOfferActive(offer.id)}
-                      className={`px-3 py-1.5 rounded-xl font-bold transition ${
+                      className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
                         offer.is_active
-                          ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-emerald-500/20 text-emerald-400'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-emerald-100 text-emerald-800'
                       }`}
                     >
                       {offer.is_active ? 'إيقاف مؤقت' : 'تفعيل العرض'}
@@ -857,7 +712,7 @@ export const StoreScreen: React.FC = () => {
 
                     <button
                       onClick={() => republishOffer(offer.id)}
-                      className="flex items-center gap-1.5 text-teal-400 hover:text-teal-300 font-bold px-3 py-1.5 rounded-xl bg-teal-950/60 border border-teal-800/40"
+                      className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>إعادة نشر العرض</span>
@@ -865,7 +720,7 @@ export const StoreScreen: React.FC = () => {
 
                     <button
                       onClick={() => deleteOffer(offer.id)}
-                      className="text-red-400 hover:text-red-300 px-2 py-1.5"
+                      className="text-red-600 hover:text-red-700 px-2 py-1.5 cursor-pointer font-bold"
                     >
                       حذف
                     </button>
@@ -879,35 +734,35 @@ export const StoreScreen: React.FC = () => {
         {/* ===================== TAB 5: STATS ===================== */}
         {activeTab === 'stats' && (
           <div className="space-y-6">
-            <h3 className="text-xl font-black text-white flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-teal-400" />
+            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-emerald-600" />
               <span>السجل والإحصائيات المالية</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-                <span className="text-slate-400 block mb-1">الطلبات المكتملة</span>
-                <span className="text-3xl font-black text-emerald-400">{completedOrders.length}</span>
+              <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">الطلبات المكتملة</span>
+                <span className="text-3xl font-black text-emerald-700">{completedOrders.length}</span>
                 <span className="text-xs text-slate-500 block mt-2">تم تسليمها واستلام قيمتها</span>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-                <span className="text-slate-400 block mb-1">إجمالي المبيعات المستلمة</span>
-                <span className="text-3xl font-black text-teal-400">{totalRevenue.toFixed(2)} د.أ</span>
+              <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">إجمالي المبيعات المستلمة</span>
+                <span className="text-3xl font-black text-emerald-700">{totalRevenue.toFixed(2)} د.أ</span>
                 <span className="text-xs text-slate-500 block mt-2">نقدًا عند الاستلام بالمتجر</span>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-                <span className="text-slate-400 block mb-1">وجبات تم إنقاذها</span>
-                <span className="text-3xl font-black text-amber-400">
+              <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">وجبات تم إنقاذها</span>
+                <span className="text-3xl font-black text-amber-600">
                   {completedOrders.reduce((sum, r) => sum + r.quantity, 0)} وجبة 🌱
                 </span>
                 <span className="text-xs text-slate-500 block mt-2">تقليل مباشر لهدر الطعام</span>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-                <span className="text-slate-400 block mb-1">زبائن لم يحضروا</span>
-                <span className="text-3xl font-black text-slate-400">0</span>
+              <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                <span className="text-slate-600 block mb-1 font-medium">زبائن لم يحضروا</span>
+                <span className="text-3xl font-black text-slate-500">0</span>
                 <span className="text-xs text-slate-500 block mt-2">نسبة التزام الحضور 100%</span>
               </div>
             </div>
@@ -917,16 +772,16 @@ export const StoreScreen: React.FC = () => {
         {/* ===================== TAB 6: SETTINGS ===================== */}
         {activeTab === 'settings' && (
           <div className="max-w-2xl mx-auto space-y-6 text-xs">
-            <h3 className="text-xl font-black text-white flex items-center gap-2">
-              <Settings className="w-5 h-5 text-teal-400" />
+            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+              <Settings className="w-5 h-5 text-emerald-600" />
               <span>إعدادات المتجر</span>
             </h3>
 
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-md">
-              <div className="flex justify-between items-center pb-4 border-b border-slate-800">
+            <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-xs">
+              <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                 <div>
-                  <span className="font-bold text-white text-sm block">استقبال الحجوزات</span>
-                  <span className="text-xs text-slate-400">تشغيل أو إيقاف استقبال الطلبات مؤقتاً</span>
+                  <span className="font-bold text-slate-900 text-sm block">استقبال الحجوزات</span>
+                  <span className="text-xs text-slate-600">تشغيل أو إيقاف استقبال الطلبات مؤقتاً</span>
                 </div>
                 <button
                   onClick={() =>
@@ -935,10 +790,10 @@ export const StoreScreen: React.FC = () => {
                       is_accepting_orders: !currentStore.is_accepting_orders
                     })
                   }
-                  className={`px-4 py-2 rounded-xl font-bold transition ${
+                  className={`px-4 py-2 rounded-xl font-bold transition cursor-pointer ${
                     currentStore?.is_accepting_orders
                       ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-800 text-slate-400'
+                      : 'bg-slate-200 text-slate-600'
                   }`}
                 >
                   {currentStore?.is_accepting_orders ? 'مفعل (نستقبل حجوزات)' : 'موقف مؤقتاً'}
@@ -946,35 +801,28 @@ export const StoreScreen: React.FC = () => {
               </div>
 
               <div>
-                <span className="text-slate-400 block mb-1">اسم المتجر:</span>
-                <p className="font-bold text-white text-sm">{currentStore?.name}</p>
+                <span className="text-slate-600 block mb-1 font-medium">اسم المتجر:</span>
+                <p className="font-bold text-slate-900 text-sm">{currentStore?.name}</p>
               </div>
 
               <div>
-                <span className="text-slate-400 block mb-1">الموقع:</span>
-                <p className="font-bold text-white">{currentStore?.governorate} - {currentStore?.area}</p>
+                <span className="text-slate-600 block mb-1 font-medium">الموقع:</span>
+                <p className="font-bold text-slate-900">{currentStore?.governorate} - {currentStore?.area}</p>
               </div>
 
               <div>
-                <span className="text-slate-400 block mb-1">رقم الهاتف للتواصل:</span>
-                <p className="font-bold text-white dir-ltr text-right">{currentStore?.phone}</p>
+                <span className="text-slate-600 block mb-1 font-medium">رقم الهاتف للتواصل:</span>
+                <p className="font-bold text-slate-900 dir-ltr text-right">{currentStore?.phone}</p>
               </div>
             </div>
 
-            <div className="pt-2 space-y-2">
-              <button
-                onClick={() => setCurrentScreen('role_select')}
-                className="w-full py-3 bg-slate-850 hover:bg-slate-800 border border-slate-700/60 rounded-2xl text-xs font-bold text-slate-200 transition"
-              >
-                تبديل الدور (واجهة الزبون أو الإدارة)
-              </button>
-
+            <div className="pt-2">
               <button
                 onClick={logout}
-                className="w-full py-3 bg-red-950/40 hover:bg-red-900/60 border border-red-900/40 rounded-2xl text-xs font-bold text-red-400 transition flex items-center justify-center gap-1.5"
+                className="w-full py-3 bg-red-50 hover:bg-red-100 border border-red-200 rounded-2xl text-xs font-bold text-red-600 transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
-                <span>تسجيل الخروج</span>
+                <span>تسجيل الخروج من لوحة المتجر</span>
               </button>
             </div>
           </div>

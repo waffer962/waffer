@@ -2,62 +2,70 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store/app-context';
-import { ShieldCheck, Mail, Lock, ArrowRight, Eye, EyeOff, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  ShieldCheck,
+  ShoppingBag,
+  Store,
+  LifeBuoy
+} from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
-  const { loginAsGoogle, loginAsStaffOrAdmin, loginAsGuest } = useApp();
-  const [showAdminModal, setShowAdminModal] = useState(false);
+  const { loginAsGoogle, loginWithEmail, loginAsGuest } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [adminRole, setAdminRole] = useState<'admin' | 'staff'>('admin');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setErrorMessage('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+    if (!email) {
+      setErrorMessage('يرجى إدخال البريد الإلكتروني');
       return;
     }
-    if (password.length < 4) {
-      setErrorMessage('كلمة المرور يجب أن لا تقل عن 4 خانات');
-      return;
-    }
+    setErrorMessage('');
+    loginWithEmail(email, password);
+  };
 
-    loginAsStaffOrAdmin(email, adminRole);
+  const handleQuickFill = (presetEmail: string) => {
+    setEmail(presetEmail);
+    setPassword('123456');
+    setErrorMessage('');
+    loginWithEmail(presetEmail, '123456');
   };
 
   return (
-    <div className="flex-1 w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden select-none">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Responsive Card Container (Centered on PC, Natural on Mobile) */}
-      <div className="max-w-lg w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative z-10 flex flex-col justify-between space-y-6">
+    <div className="flex-1 w-full bg-slate-50 text-slate-900 flex items-center justify-center p-4 sm:p-8 min-h-screen">
+      {/* Container card with clean commercial shopping look */}
+      <div className="max-w-md w-full bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-between space-y-6">
         
-        {/* Header */}
+        {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>منصة تقليل هدر الطعام في الأردن 🇯🇴</span>
+          {/* Logo badge */}
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-600 text-white font-black text-2xl shadow-md shadow-emerald-600/20 mb-1">
+            وفّر
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            تسجيل الدخول إلى <span className="text-emerald-400">وفّر</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
-            انضم إلينا كزبون للاستفادة من الوجبات المخفضة، أو كمتجر لعرض فائض طعامك والحد من الهدر
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            تطبيق <span className="text-emerald-600">وفّر</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-xs mx-auto leading-relaxed">
+            منصة شراء فائض الوجبات بأسعار مخفضة وتقليل الهدر في الأردن 🇯🇴
           </p>
         </div>
 
-        {/* Central Action Buttons */}
-        <div className="flex flex-col gap-3.5 py-2">
-          {/* 1. Google Sign-in */}
+        {/* 1. Google Sign-In Button */}
+        <div className="space-y-3">
           <button
+            type="button"
             onClick={() => loginAsGoogle()}
-            className="group relative flex items-center justify-center gap-3 w-full py-4 px-4 bg-white hover:bg-slate-100 text-slate-900 rounded-2xl font-black text-sm shadow-xl shadow-white/5 active:scale-[0.98] transition border border-slate-200"
+            className="flex items-center justify-center gap-3 w-full py-3.5 px-4 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl font-bold text-sm shadow-sm border border-slate-200 active:scale-[0.98] transition cursor-pointer"
           >
-            {/* Google G Logo SVG */}
+            {/* Official Google G Icon */}
             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
@@ -79,160 +87,118 @@ export const LoginScreen: React.FC = () => {
             <span>المتابعة بواسطة Google</span>
           </button>
 
-          <div className="flex items-center gap-3 my-1">
-            <div className="h-px bg-slate-800 flex-1" />
-            <span className="text-[11px] text-slate-500 font-medium">أو خيارات الإدارة والموظفين</span>
-            <div className="h-px bg-slate-800 flex-1" />
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-2">
+            <div className="h-px bg-slate-200 flex-1" />
+            <span className="text-[11px] text-slate-600 font-medium">أو بالبريد الإلكتروني</span>
+            <div className="h-px bg-slate-200 flex-1" />
           </div>
 
-          {/* 2. Email Login (Super Admin & Support Staff Only) */}
-          <button
-            onClick={() => {
-              setShowAdminModal(true);
-              setErrorMessage('');
-            }}
-            className="flex items-center justify-center gap-2.5 w-full py-3.5 px-4 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-2xl font-bold text-xs border border-slate-700 active:scale-[0.98] transition shadow-sm"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>المتابعة بواسطة البريد الإلكتروني (للإدارة والموظفين)</span>
-          </button>
-        </div>
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
-        {/* 3. Guest Browsing at the bottom */}
-        <div className="pt-4 border-t border-slate-800 text-center space-y-2">
-          <button
-            onClick={loginAsGuest}
-            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition py-2.5 px-5 rounded-xl bg-emerald-950/40 border border-emerald-900/60"
-          >
-            <span>التصفح كزائر بدون حساب</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <p className="text-[11px] text-slate-500">
-            يمكنك استعراض العروض والأسعار كزائر، ويتطلب إتمام الحجز تسجيل الدخول.
-          </p>
-        </div>
-      </div>
-
-      {/* Admin / Staff Login Modal */}
-      {showAdminModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative text-right">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
-                حساب مصرح للإدارة فقط
-              </span>
-              <button
-                onClick={() => setShowAdminModal(false)}
-                className="text-slate-400 hover:text-white text-base"
-              >
-                ✕
-              </button>
+          {/* 2. Email & Password Form (Intelligent Role Detection) */}
+          <form onSubmit={handleEmailSubmit} className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                البريد الإلكتروني:
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3 pl-10 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition"
+                  required
+                />
+                <Mail className="w-4 h-4 text-slate-600 absolute left-3 top-3.5" />
+              </div>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1">تسجيل دخول الإدارة والدعم</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              تُنشأ هذه الحسابات وتُمنح صلاحياتها من خلال إدارة الموقع فقط ولا يوجد خيار لإنشاء حساب جديد.
-            </p>
-
-            {/* Role switch toggle */}
-            <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-950 rounded-xl mb-4 border border-slate-800 text-xs">
-              <button
-                type="button"
-                onClick={() => setAdminRole('admin')}
-                className={`py-2 font-bold rounded-lg transition ${
-                  adminRole === 'admin'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                الأدمن الرئيسي
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdminRole('staff')}
-                className={`py-2 font-bold rounded-lg transition ${
-                  adminRole === 'staff'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                موظف الشكاوى والتتبع
-              </button>
-            </div>
-
-            {errorMessage && (
-              <div className="flex items-center gap-2 p-3 mb-3 bg-red-950/60 border border-red-800 rounded-xl text-red-300 text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleAdminLogin} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-medium text-slate-300 mb-1">
-                  البريد الإلكتروني المعتمد:
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={adminRole === 'admin' ? 'admin@waffer.jo' : 'support@waffer.jo'}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-3 pl-10 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    required
-                  />
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-300 mb-1">
-                  كلمة المرور:
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-3 pl-10 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-slate-500 hover:text-slate-300 absolute left-3 top-3.5"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-950/40 transition active:scale-[0.98]"
-                >
-                  دخول لوحة التحكم
-                </button>
-              </div>
-
-              <div className="text-center pt-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                كلمة المرور:
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3 pl-10 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition"
+                />
                 <button
                   type="button"
-                  onClick={() => {
-                    setEmail(adminRole === 'admin' ? 'admin@waffer.jo' : 'staff@waffer.jo');
-                    setPassword('123456');
-                  }}
-                  className="text-xs text-emerald-400 hover:underline font-bold"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-slate-600 hover:text-slate-600 absolute left-3 top-3.5 cursor-pointer"
                 >
-                  ⚡ تعبئة بيانات تجريبية سريعة
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-            </form>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.98] cursor-pointer"
+            >
+              تسجيل الدخول
+            </button>
+          </form>
+        </div>
+
+        {/* 3. Quick-Access Account Chips (For direct testing of each role) */}
+        <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+          <p className="text-[11px] font-bold text-slate-600 text-center">
+            ⚡ حسابات معتمدة جاهزة للدخول المباشر:
+          </p>
+          <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+            <button
+              type="button"
+              onClick={() => handleQuickFill('admin@waffer.jo')}
+              className="p-2 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl font-bold text-slate-700 hover:text-emerald-700 transition flex flex-col items-center gap-1 cursor-pointer text-center"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>الأدمن العام</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickFill('staff@waffer.jo')}
+              className="p-2 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl font-bold text-slate-700 hover:text-blue-700 transition flex flex-col items-center gap-1 cursor-pointer text-center"
+            >
+              <LifeBuoy className="w-4 h-4 text-blue-600" />
+              <span>إدارة الطلبات</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickFill('store@waffer.jo')}
+              className="p-2 bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 rounded-xl font-bold text-slate-700 hover:text-amber-700 transition flex flex-col items-center gap-1 cursor-pointer text-center"
+            >
+              <Store className="w-4 h-4 text-amber-600" />
+              <span>صاحب متجر</span>
+            </button>
           </div>
         </div>
-      )}
+
+        {/* 4. Guest Mode */}
+        <div className="pt-2 text-center">
+          <button
+            type="button"
+            onClick={loginAsGuest}
+            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition py-2 px-4 rounded-xl hover:bg-emerald-50 cursor-pointer"
+          >
+            <span>تصفح العروض كزائر بدون حساب</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
