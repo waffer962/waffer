@@ -21,17 +21,18 @@ import {
 // Helper to play synthesized urgent audio alert using Web Audio API
 export const playUrgentAlertSound = () => {
   try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
-    
-    // Create double beep
+
     const playBeep = (freq: number, start: number, duration: number) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime + start);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime + start);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + start + duration);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -40,9 +41,9 @@ export const playUrgentAlertSound = () => {
     };
 
     playBeep(880, 0, 0.15);
-    playBeep(1100, 0.2, 0.2);
+    playBeep(1100, 0.2, 0.25);
   } catch {
-    // Audio might require user gesture on some browsers
+    // Audio context may require user interaction
   }
 };
 
@@ -78,10 +79,10 @@ interface AppContextType {
     customerPhone: string;
     expectedArrival: string;
     notes?: string;
-  }) => { success: boolean; reservation?: Reservation; error?: string };
-  updateReservationStatus: (reservationId: string, status: Reservation['status']) => void;
+  }) => { success: boolean; error?: string; reservation?: Reservation };
+  updateReservationStatus: (id: string, status: Reservation['status']) => void;
 
-  // Urgent Orders
+  // Urgent Notifications & Audio Alarm State (>50% Large Orders)
   hasPendingUrgentOrders: boolean;
   urgentOrdersCount: number;
   isUrgentSoundMuted: boolean;
@@ -89,8 +90,8 @@ interface AppContextType {
 
   // Notifications
   notifications: AppNotification[];
-  markNotificationAsRead: (id: string) => void;
   addNotification: (title: string, message: string, type?: 'regular' | 'urgent') => void;
+  markNotificationRead: (id: string) => void;
 
   // Complaints
   complaints: Complaint[];
@@ -98,7 +99,7 @@ interface AppContextType {
   updateComplaintStatus: (id: string, status: Complaint['status'], notes?: string) => void;
 
   // Auth Helpers
-  loginAsGoogle: (roleChoice?: 'customer' | 'store_owner') => void;
+  loginAsGoogle: (email?: string, name?: string, roleChoice?: 'customer' | 'store_owner') => void;
   loginAsStaffOrAdmin: (email: string, role: 'admin' | 'staff') => void;
   loginWithEmail: (email: string, password?: string) => UserRole;
   loginAsGuest: () => void;
@@ -110,6 +111,8 @@ interface AppContextType {
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+const SESSION_STORAGE_KEY = 'waffer_user_session_v1';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('splash');
@@ -125,6 +128,82 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [isUrgentSoundMuted, setIsUrgentSoundMuted] = useState(false);
   const urgentIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastAlarmTimeRef = useRef<number>(0);
+
+  // 1. Restore Persistent Session from localStorage on Mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (saved) {
+        const { user, role, screen } = JSON.parse(saved);
+        if (user && role && role !== 'guest') {
+          setCurrentUser(user);
+          setCurrentUserRole(role);
+          // Only bypass splash if explicitly set
+          if (screen && screen !== 'splash') {
+            setCurrentScreen(screen);
+          } else {
+            setCurrentScreen(
+              role === 'store_owner'
+                ? 'store'
+                : role === 'admin'
+                ? 'admin'
+                : role === 'staff'
+                ? 'staff'
+                : 'customer'
+            );
+          }
+        }
+      }
+    } catch {
+      // ignore JSON parse errors
+    }
+  }, []);
+
+  // Helper to persist session
+  const persistSession = (user: Profile | null, role: UserRole, screen: 'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff') => {
+    try {
+      if (user && role !== 'guest') {
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user, role, screen }));
+      } else {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // 2. Real-time Multi-Device Sync: Polling `/api/sync` every 2.5 seconds
+  const syncWithServer = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sync', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (Array.isArray(data.reservations)) {
+        setReservations(data.reservations);
+      }
+      if (Array.isArray(data.notifications) && data.notifications.length > 0) {
+        setNotifications((prev) => {
+          const ids = new Set(prev.map((n) => n.id));
+          const newOnes = data.notifications.filter((n: AppNotification) => !ids.has(n.id));
+          return [...newOnes, ...prev];
+        });
+      }
+      if (Array.isArray(data.offers) && data.offers.length > 0) {
+        setOffers(data.offers);
+      }
+    } catch {
+      // Server sync fallback
+    }
+  }, []);
+
+  // Sync polling loop
+  useEffect(() => {
+    syncWithServer();
+    const interval = setInterval(syncWithServer, 2500);
+    return () => clearInterval(interval);
+  }, [syncWithServer]);
 
   // Check pending urgent orders (where status = 'pending' and is_large_order = true)
   const pendingUrgentReservations = reservations.filter(
@@ -133,13 +212,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const hasPendingUrgentOrders = pendingUrgentReservations.length > 0;
   const urgentOrdersCount = pendingUrgentReservations.length;
 
-  // Audio interval for urgent alert (plays every 6 seconds if not muted and in store mode)
+  // Audio interval for urgent alert (plays every 5 seconds if not muted and on store screen)
   useEffect(() => {
     if (hasPendingUrgentOrders && !isUrgentSoundMuted && currentScreen === 'store') {
-      playUrgentAlertSound();
+      const now = Date.now();
+      if (now - lastAlarmTimeRef.current > 4000) {
+        playUrgentAlertSound();
+        lastAlarmTimeRef.current = now;
+      }
+
       urgentIntervalRef.current = setInterval(() => {
         playUrgentAlertSound();
-      }, 6000);
+        lastAlarmTimeRef.current = Date.now();
+      }, 5000);
     } else {
       if (urgentIntervalRef.current) {
         clearInterval(urgentIntervalRef.current);
@@ -154,29 +239,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [hasPendingUrgentOrders, isUrgentSoundMuted, currentScreen]);
 
-  // Current store for store owner (defaults to first store for demo)
+  // Current store for store owner (defaults to first store)
   const currentStore = stores[0] || null;
+
+  // Add notification
+  const addNotification = (title: string, message: string, type: 'regular' | 'urgent' = 'regular') => {
+    const newNotif: AppNotification = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      title,
+      message,
+      type,
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  const markNotificationRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
+  };
 
   // Add new store
   const addStore = (newStoreData: Omit<Store, 'id' | 'created_at' | 'status'>) => {
     const newStore: Store = {
       ...newStoreData,
       id: `store-${Date.now()}`,
-      status: 'pending', // Requires admin approval as per requirement
+      status: 'pending',
       created_at: new Date().toISOString()
     };
     setStores((prev) => [newStore, ...prev]);
     addNotification('طلب تسجيل متجر جديد 🏪', `تم إرسال طلب تسجيل ${newStore.name} للإدارة للمراجعة والتدقيق.`);
   };
 
-  // Update store status (Admin)
   const updateStoreStatus = (storeId: string, status: Store['status']) => {
     setStores((prev) =>
       prev.map((s) => (s.id === storeId ? { ...s, status } : s))
     );
   };
 
-  // Update store details
   const updateStoreDetails = (storeId: string, updates: Partial<Store>) => {
     setStores((prev) =>
       prev.map((s) => (s.id === storeId ? { ...s, ...updates } : s))
@@ -194,19 +296,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addNotification('تم نشر عرض جديد 🍞', `تم نشر العرض "${newOffer.title}" بنجاح في متجرك.`);
   };
 
-  // Toggle offer active state
   const toggleOfferActive = (offerId: string) => {
     setOffers((prev) =>
       prev.map((o) => (o.id === offerId ? { ...o, is_active: !o.is_active } : o))
     );
   };
 
-  // Delete offer
   const deleteOffer = (offerId: string) => {
     setOffers((prev) => prev.filter((o) => o.id !== offerId));
   };
 
-  // Republish past offer in 1 click
   const republishOffer = (offerId: string) => {
     const offer = offers.find((o) => o.id === offerId);
     if (!offer) return;
@@ -221,7 +320,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addNotification('إعادة نشر العرض 🔁', `تمت إعادة نشر عرض "${offer.title}" وتجديد الكميات.`);
   };
 
-  // Create Reservation with automatic 50% large-order detection!
+  // Create Reservation with automatic 50% large-order detection & server sync
   const createReservation = ({
     offerId,
     quantity,
@@ -244,10 +343,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: `الكمية المتوفرة حالياً هي ${targetOffer.quantity_available} فقط.` };
     }
 
-    // Auto calculate if order > 50% of the initial offer quantity
+    // Auto calculate if order >= 50% of the initial or currently available offer quantity
     // Requirement: "عندما يحجز الزبون كمية تتجاوز 50% من إجمالي الكمية المعروضة للمنتج عند إنشاء الطلب، يصنف النظام الطلب تلقائيًا على أنه طلب كبير"
     const ratio = quantity / targetOffer.initial_quantity;
-    const isLarge = ratio > 0.5;
+    const isLarge = ratio >= 0.5 || quantity >= Math.ceil(targetOffer.quantity_available * 0.5);
 
     const randomSuffix = Math.floor(10000 + Math.random() * 90000);
     const bookingCode = `WFR-${randomSuffix}`;
@@ -269,13 +368,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       unit_price: targetOffer.discounted_price,
       total_price: Number((quantity * targetOffer.discounted_price).toFixed(2)),
       expected_arrival: expectedArrival,
-      status: 'pending', // Must be accepted by store owner
+      status: 'pending',
       is_large_order: isLarge,
       notes,
       created_at: new Date().toISOString()
     };
 
+    // Update local state immediately
     setReservations((prev) => [newReservation, ...prev]);
+
+    // Update local offer stock
+    setOffers((prev) =>
+      prev.map((o) => {
+        if (o.id === offerId) {
+          const remaining = o.quantity_available - quantity;
+          return {
+            ...o,
+            quantity_available: Math.max(0, remaining),
+            is_active: remaining > 0
+          };
+        }
+        return o;
+      })
+    );
 
     // Send notifications
     if (isLarge) {
@@ -288,67 +403,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       addNotification(
         'طلب حجز جديد 🛒',
-        `طلب حجز جديد رقم ${bookingCode} من ${customerName} بانتظار موافقتك.`,
-        'regular'
+        `تم استلام حجز جديد برقم ${bookingCode} للكمية ${quantity}. يرجى الموافقة أو الرفض.`
       );
     }
+
+    // Post to Server for cross-device sync
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'create_reservation',
+        payload: {
+          offer_id: targetOffer.id,
+          offer_title: targetOffer.title,
+          offer_image: targetOffer.image_url,
+          store_id: targetOffer.store_id,
+          store_name: targetOffer.store_name || 'المتجر',
+          store_location: targetOffer.store_location || 'عمان، الأردن',
+          store_phone: targetOffer.store_phone || '0790000000',
+          customer_id: currentUser?.id,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          quantity,
+          unit_price: targetOffer.discounted_price,
+          total_price: Number((quantity * targetOffer.discounted_price).toFixed(2)),
+          expected_arrival: expectedArrival,
+          notes,
+          is_large_order: isLarge
+        }
+      })
+    }).catch(() => {
+      // Offline fallback
+    });
 
     return { success: true, reservation: newReservation };
   };
 
-  // Update reservation status (Store Owner / Staff)
-  const updateReservationStatus = (reservationId: string, status: Reservation['status']) => {
+  // Update Reservation Status (Store / Staff Action)
+  const updateReservationStatus = (id: string, status: Reservation['status']) => {
     setReservations((prev) =>
-      prev.map((r) => {
-        if (r.id !== reservationId) return r;
+      prev.map((r) => (r.id === id ? { ...r, status } : r))
+    );
 
-        // When confirmed, deduct stock from available quantity
-        if (status === 'confirmed' && r.status !== 'confirmed') {
-          setOffers((prevOffers) =>
-            prevOffers.map((o) =>
-              o.id === r.offer_id
-                ? { ...o, quantity_available: Math.max(0, o.quantity_available - r.quantity) }
-                : o
-            )
-          );
-          addNotification(
-            'تمت الموافقة على طلب الحجز! ✅',
-            `تم تأكيد حجز ${r.customer_name} للطلب ${r.booking_code}. فاتورة الحجز جاهزة للاستلام.`
-          );
-        } else if (status === 'rejected') {
-          addNotification(
-            'تم رفض طلب الحجز ❌',
-            `تم رفض طلب الحجز رقم ${r.booking_code}.`
-          );
-        } else if (status === 'completed') {
-          addNotification(
-            'تم تسليم الطلب بنجاح 💰',
-            `تم استلام قيمة الطلب ${r.booking_code} نقداً وتسليم المنتجات للزبون.`
-          );
-        }
+    const target = reservations.find((r) => r.id === id);
+    if (target) {
+      if (status === 'confirmed') {
+        addNotification('تم تأكيد الحجز ✅', `تمت الموافقة على الحجز ${target.booking_code}. بإمكان الزبون الحضور للاستلام.`);
+      } else if (status === 'rejected') {
+        addNotification('تم رفض الحجز ❌', `تم رفض الحجز ${target.booking_code} وإشعار الزبون.`);
+      } else if (status === 'completed') {
+        addNotification('اكتمل الطلب 🎉', `تم تسليم الحجز ${target.booking_code} واستلام المبلغ نقدًا.`);
+      }
+    }
 
-        return { ...r, status };
+    // Broadcast status update to server
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_reservation_status',
+        payload: { id, status }
       })
-    );
-  };
-
-  // Notification helper
-  const addNotification = (title: string, message: string, type: 'regular' | 'urgent' = 'regular') => {
-    const newNotif: AppNotification = {
-      id: `notif-${Date.now()}`,
-      title,
-      message,
-      type,
-      is_read: false,
-      created_at: new Date().toISOString()
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
-  };
-
-  const markNotificationAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
+    }).catch(() => {});
   };
 
   // Complaints
@@ -369,18 +485,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  // Auth Methods
-  const loginAsGoogle = (roleChoice?: 'customer' | 'store_owner') => {
+  // Auth Methods with Real User Profiles & Persistent Sessions
+  const loginAsGoogle = (email?: string, name?: string, roleChoice: 'customer' | 'store_owner' = 'customer') => {
+    const userEmail = email?.trim() || 'user@gmail.com';
+    const userName = name?.trim() || userEmail.split('@')[0] || (roleChoice === 'store_owner' ? 'تاجر وفّر' : 'عميل وفّر');
+
     const profile: Profile = {
-      id: 'google-user-1',
-      full_name: 'محمد الأردني',
-      phone: '0798765432',
-      role: roleChoice || 'customer',
-      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+      id: `google-${Date.now()}`,
+      full_name: userName,
+      phone: '079' + Math.floor(1000000 + Math.random() * 9000000),
+      role: roleChoice,
+      avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userName)}`
     };
+
+    const targetScreen = roleChoice === 'store_owner' ? 'store' : 'customer';
     setCurrentUser(profile);
-    setCurrentUserRole('customer');
-    setCurrentScreen('customer');
+    setCurrentUserRole(roleChoice);
+    setCurrentScreen(targetScreen);
+    persistSession(profile, roleChoice, targetScreen);
   };
 
   const loginWithEmail = (email: string, password?: string): UserRole => {
@@ -410,17 +532,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar_url: undefined
     };
 
-    setCurrentUser(profile);
-    setCurrentUserRole(determinedRole);
-    setCurrentScreen(
+    const targetScreen =
       determinedRole === 'admin'
         ? 'admin'
         : determinedRole === 'staff'
         ? 'staff'
         : determinedRole === 'store_owner'
         ? 'store'
-        : 'customer'
-    );
+        : 'customer';
+
+    setCurrentUser(profile);
+    setCurrentUserRole(determinedRole);
+    setCurrentScreen(targetScreen);
+    persistSession(profile, determinedRole, targetScreen);
 
     return determinedRole;
   };
@@ -436,6 +560,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
     setCurrentUser(null);
     setCurrentUserRole('guest');
     setCurrentScreen('login');
@@ -474,8 +599,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isUrgentSoundMuted,
         setIsUrgentSoundMuted,
         notifications,
-        markNotificationAsRead,
         addNotification,
+        markNotificationRead,
         complaints,
         addComplaint,
         updateComplaintStatus,

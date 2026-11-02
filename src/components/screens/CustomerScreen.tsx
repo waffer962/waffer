@@ -57,12 +57,20 @@ export const CustomerScreen: React.FC = () => {
   // Selected Offer Modal for Details & Reservation
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [reservationQty, setReservationQty] = useState(1);
-  const [customerName, setCustomerName] = useState(currentUser?.full_name || 'عبدالله المجالي');
-  const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '0795551234');
+  const [customerName, setCustomerName] = useState(currentUser?.full_name || '');
+  const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '');
   const [expectedArrival, setExpectedArrival] = useState('اليوم بين 8:30 و 9:00 مساءً');
   const [notes, setNotes] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState<Reservation | null>(null);
   const [bookingError, setBookingError] = useState('');
+
+  // Sync with current user profile
+  React.useEffect(() => {
+    if (currentUser) {
+      if (currentUser.full_name) setCustomerName(currentUser.full_name);
+      if (currentUser.phone) setCustomerPhone(currentUser.phone);
+    }
+  }, [currentUser]);
 
   // Selected Invoice to view/print
   const [viewInvoice, setViewInvoice] = useState<Reservation | null>(null);
