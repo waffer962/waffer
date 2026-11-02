@@ -1,102 +1,71 @@
-# 🇯🇴 مشروع وفّر (Waffer) - منصة تقليل هدر الطعام في الأردن
+Waffer – Food Waste Reduction Platform
 
-> **مشروع تخرج نوعي**: منصة رقمية بتصميم Mobile-First تهدف إلى تقليل هدر الطعام في الأردن من خلال تمكين المطاعم والمخابز ومحلات الأغذية من عرض المنتجات الغذائية الفائضة والصالحة للاستهلاك بأسعار مخفضة، مع نظام حجز مؤكد وفاتورة رقمية والدفع نقداً عند الاستلام.
+Project Information
 
----
+University: Amman Arab University
+College: College of Information Technology
+Course: Software Development and Documentation
+Instructor: Dr. Alaa Thwabeh
+GitHub: https://github.com/waffer962/waffer
 
-## 📱 معمارية المشروع والتقنيات المستخدمة
+Team Members
 
-1. **الواجهة الأمامية (Frontend)**:
-   * **Next.js (App Router) + React + TypeScript**
-   * **Tailwind CSS v4** بتصميم مخصص ومطابق لتطبيقات الهواتف الذكية (Mobile-First UI).
-   * خط **Cairo** العربي المتناسق مع تجربة مستخدم سلسلة (RTL).
-   * **Web Audio API** لنظام التنبيه الصوتي العاجل والمتكرر للطلبات الكبيرة (> 50%).
+Name| Role
+Mohammad Jameel Jibrin| Project Manager
+Ahmad Amin Mallouh| Complaints and Customer Support
+Ahmad Osama Al-Sharawneh| Website Administrator
 
-2. **قاعدة البيانات والمصادقة (Backend & Database)**:
-   * **Supabase** (PostgreSQL, Auth, RLS Security Policies).
-   * كود اتصال متقدم للـ Client والـ Server في `src/lib/supabase/`.
-   * ملف Schema متكامل جاهز للتنفيذ في `supabase/schema.sql`.
+1. Project Overview
 
-3. **التحويل لتطبيق هاتف (Android Studio & App Store) ودور لغة Java**:
-   * يتم تغليف المشروع بواسطة **Capacitor** لتوليد مشروع أندرويد متكامل في **Android Studio**.
-   * يعتمد مشروع الأندرويد في بنيته وأكواد الـ Native على لغة **Java** (مثل `MainActivity.java` وتطوير Native Plugins مخصصة لخصائص الجهاز والكاميرا والإشعارات).
+Waffer is a web platform designed to reduce food waste in Jordan. It allows restaurants, bakeries, and food stores to sell safe, surplus food at discounted prices instead of throwing it away.
 
----
+The platform helps businesses recover part of their financial losses while allowing customers to purchase affordable food.
 
-## 👥 أطراف النظام والصلاحيات
+2. Problem Statement
 
-1. **الزبون (Customer)**:
-   * استعراض العروض المخفضة في محافظات الأردن وتصفيتها.
-   * إرسال طلب الحجز بانتظار موافقة المتجر.
-   * الحصول على **فاتورة حجز رقمية رسمية** تحتوي على رقم فريد وقابلة للطباعة أو التنزيل بصيغة PDF.
-   * الدفع نقدًا عند الاستلام من المتجر.
+Many food businesses discard unsold food that is still suitable for consumption, resulting in financial losses and unnecessary food waste. Meanwhile, customers are looking for affordable food options.
 
-2. **صاحب المتجر (Store Owner)**:
-   * تسجيل المتجر وانتظار موافقة الإدارة.
-   * إضافة عروض طعام فائض وتحديد الكميات وأوقات الاستلام.
-   * **نظام التنبيه العاجل والمتكرر**: عند حجز أكثر من 50% من الكمية المعروضة، يصنف النظام الطلب تلقائياً كطلب كبير ويطلق تنبيهاً مرئياً وصوتياً متكرراً.
-   * قبول أو رفض الحجوزات، وتأكيد التسليم بعد استلام المبلغ نقدًا.
-   * ميزة إعادة نشر عرض سابق بنقرة واحدة.
+Waffer connects these businesses with customers through an organized reservation and pickup system.
 
-3. **الأدمن الرئيسي (Super Admin)**:
-   * تسجيل دخول خاص بالبريد الإلكتروني وكلمة المرور (بدون تسجيل عام).
-   * مراجعة واعتماد طلبات المتاجر، مراقبة العروض وحذف المخالف منها.
-   * إنشاء حسابات الموظفين وتحديد صلاحياتهم وتعديل محتوى الموقع.
+3. Project Objectives
 
-4. **موظف الشكاوى وتتبع الطلبات (Support Staff)**:
-   * استقبال ومتابعة شكاوى الزبائن والمتاجر وتحديث حالتها.
-   * تتبع الطلبات الميدانية والعالقة وحل الإشكالات.
+- Reduce food waste in Jordan.
+- Help stores minimize financial losses.
+- Provide affordable food for customers.
+- Simplify food reservations and pickups.
+- Develop a secure, user-friendly platform.
 
----
+4. Project Scope and Features
 
-## 🚀 تشغيل المشروع محلياً
+Customers: Browse food offers, reserve products, track orders, receive digital reservation invoices, and pay cash upon pickup.
 
-```bash
-# تثبيت الحزم
-npm install
+Store Owners: Register stores, publish discounted offers, manage reservations, and confirm completed pickups.
 
-# تشغيل السيرفر المحلي
-npm run dev
-```
+Super Admin: Approve stores, manage users and offers, and control staff permissions.
 
-افتح المتصفح على: `http://localhost:3000`
+Support Staff: Handle complaints and track reservation issues.
 
----
+Every reservation requires store approval before confirmation. Large reservations exceeding 50% of the offered quantity trigger urgent alerts.
 
-## 🗄️ إعداد قاعدة بيانات Supabase
+The first version will be a mobile-friendly website. Delivery and online payments are outside the initial scope.
 
-1. ادخل إلى لوحة تحكم [Supabase](https://supabase.com).
-2. افتح مشروعك واذهب إلى **SQL Editor**.
-3. انسخ محتويات ملف [`supabase/schema.sql`](file:///c:/Users/pubmo/OneDrive/سطح%20المكتب/waffer/supabase/schema.sql) والصقه هناك ثم اضغط **RUN**.
+5. Technologies
 
----
+- Frontend: Next.js, React, TypeScript, Tailwind CSS.
+- Backend and Database: Supabase, PostgreSQL.
+- Security: Authentication and role-based access control.
+- Future Development: Mobile application support and AI-assisted recommendations.
 
-## 🌐 النشر على سيرفر هوستنجر (Hostinger)
+6. Project Documentation
 
-### الطريقة الأولى: استضافة Hostinger Cloud / VPS (مستحسن لـ Next.js Node.js)
-1. في لوحة تحكم السيرفر، قم بربط المستودع: `https://github.com/waffer962/waffer.git`.
-2. أضف متغيرات البيئة من ملف `.env.example` في إعدادات السيرفر.
-3. شغّل التطبيق باستخدام أمر:
-   ```bash
-   npm install && npm run build && npm run start
-   ```
-4. يمكنك استخدام **PM2** لإبقاء السيرفر يعمل دائماً: `pm2 start npm --name "waffer" -- start`.
+Part 1 includes:
 
----
+1. Business Case
+2. Project Charter
+3. Kick-off Meeting Agenda
 
-## 📱 التحويل إلى تطبيق Google Play & App Store عبر Capacitor
+Kick-off Meeting: November 2, 2026 — Online.
 
-```bash
-# 1. تثبيت Capacitor
-npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/ios
+7. Expected Outcome
 
-# 2. تهيئة المشروع
-npx cap init "Waffer" "jo.waffer.app"
-
-# 3. إضافة منصة الأندرويد لـ Android Studio (Java)
-npx cap add android
-
-# 4. فتح المشروع في Android Studio
-npx cap open android
-```
-يمكن بناء ملف APK / AAB لرفعه على Google Play مباشرة.
+Waffer aims to reduce food waste, support local businesses, help customers save money, and encourage sustainable food consumption in Jordan.
