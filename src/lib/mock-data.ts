@@ -1,0 +1,309 @@
+import { Store, Offer, Reservation, AppNotification, Complaint } from '@/types';
+
+export const JORDAN_GOVERNORATES = [
+  'عمان',
+  'إربد',
+  'الزرقاء',
+  'العقبة',
+  'البلقاء',
+  'مادبا',
+  'جرش',
+  'عجلون',
+  'الكرك',
+  'المفرق',
+  'الطفيلة',
+  'معان'
+];
+
+export const FOOD_CATEGORIES = [
+  'الكل',
+  'مخابز ومعجنات',
+  'وجبات ومطاعم',
+  'وجبات سريعة',
+  'حلويات',
+  'سوبرماركت'
+];
+
+export const INITIAL_STORES: Store[] = [
+  {
+    id: 'store-1',
+    name: 'مخابز السفراء الحديثة',
+    logo_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=80',
+    cover_image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
+    governorate: 'عمان',
+    area: 'الجبيهة - دوار المنهل',
+    address: 'شارع ياجوز، قرب دوار المنهل',
+    lat: 32.0234,
+    lng: 35.8671,
+    phone: '0791234567',
+    phone_secondary: '065331122',
+    store_type: 'مخبز',
+    description: 'مخبز رائد يقدم أفضل أنواع الخبز العربي والفرنسي والمعجنات الطازجة يومياً.',
+    working_days: 'يومياً طيلة الأسبوع',
+    working_hours: '07:00 ص - 11:30 م',
+    owner_name: 'أحمد الخالد',
+    status: 'approved',
+    is_accepting_orders: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'store-2',
+    name: 'شاورما خان زيد',
+    logo_url: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=150&auto=format&fit=crop&q=80',
+    cover_image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600&auto=format&fit=crop&q=80',
+    governorate: 'عمان',
+    area: 'شارع الجامعة الأردنية',
+    address: 'بجانب البوابة الشمالية للجامعة الأردنية',
+    lat: 32.0155,
+    lng: 35.8741,
+    phone: '0787654321',
+    store_type: 'وجبات سريعة',
+    description: 'شاورما على الفحم ووجبات سريعة بجودة عالية مع خلطات بهارات مميزة.',
+    working_days: 'يومياً',
+    working_hours: '12:00 م - 01:00 ص',
+    owner_name: 'محمد الزعبي',
+    status: 'approved',
+    is_accepting_orders: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'store-3',
+    name: 'حلويات النجمة الأصيلة',
+    logo_url: 'https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=150&auto=format&fit=crop&q=80',
+    cover_image: 'https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=600&auto=format&fit=crop&q=80',
+    governorate: 'إربد',
+    area: 'شارع الجامعة',
+    address: 'مجمع الأبرار، مقابل جامعة اليرموك',
+    lat: 32.5367,
+    lng: 35.8542,
+    phone: '0799887766',
+    store_type: 'حلويات',
+    description: 'كنافة نابلسية، بقلاوة، وحلويات عربية وغربية فاخرة.',
+    working_days: 'يومياً',
+    working_hours: '09:00 ص - 12:00 منتصف الليل',
+    owner_name: 'سامر قاسم',
+    status: 'approved',
+    is_accepting_orders: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'store-4',
+    name: 'مطعم القدس العريق',
+    logo_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=150&auto=format&fit=crop&q=80',
+    cover_image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
+    governorate: 'عمان',
+    area: 'وسط البلد',
+    address: 'شارع الرينبو، قرب مقهى السنترال',
+    lat: 31.9539,
+    lng: 35.9328,
+    phone: '0771122334',
+    store_type: 'مطعم',
+    description: 'أطباق شرقية أصيلة ومناسف وأرز مع دجاج طازج يومياً.',
+    working_days: 'يومياً',
+    working_hours: '10:00 ص - 11:00 م',
+    owner_name: 'طارق الدجاني',
+    status: 'approved',
+    is_accepting_orders: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'store-5',
+    name: 'مخبز الشرق الأوسط الجديد',
+    logo_url: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=150&auto=format&fit=crop&q=80',
+    cover_image: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
+    governorate: 'الزرقاء',
+    area: 'الزرقاء الجديدة - شارع 36',
+    address: 'شارع 36 التجاري، بجانب البنك الإسلامي',
+    lat: 32.0628,
+    lng: 36.0885,
+    phone: '0785566778',
+    store_type: 'مخبز',
+    description: 'معجنات، كعك بالسمسم، وخبز تورتيلا وخبز صحي بالحبوب الكاملة.',
+    working_days: 'يومياً',
+    working_hours: '06:30 ص - 11:00 م',
+    owner_name: 'إبراهيم حسن',
+    status: 'approved',
+    is_accepting_orders: true,
+    created_at: new Date().toISOString()
+  }
+];
+
+export const INITIAL_OFFERS: Offer[] = [
+  {
+    id: 'offer-1',
+    store_id: 'store-1',
+    store_name: 'مخابز السفراء الحديثة',
+    store_logo: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=80',
+    store_location: 'عمان - الجبيهة',
+    store_phone: '0791234567',
+    title: 'سلة معجنات وكرواسون مخبوز اليوم',
+    description: 'سلة وفّر تحتوي على 10 قطع معجنات مشكلة (جبنة، زعتر، بيتزا، كرواسون شوكولاتة) صالحة للاستهلاك 100% ومخبوزة صباح اليوم.',
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&auto=format&fit=crop&q=80',
+    original_price: 5.50,
+    discounted_price: 2.25,
+    quantity_available: 8,
+    initial_quantity: 12,
+    pickup_start: '19:30',
+    pickup_end: '22:30',
+    category: 'مخابز ومعجنات',
+    is_active: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'offer-2',
+    store_id: 'store-2',
+    store_name: 'شاورما خان زيد',
+    store_logo: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=150&auto=format&fit=crop&q=80',
+    store_location: 'عمان - شارع الجامعة',
+    store_phone: '0787654321',
+    title: 'وجبة شاورما عربي دبل مع بطاطا ومثومة',
+    description: 'وجبة شاورما دجاج كاملة مع مخلل وبطاطا مقرمشة ومثومة، فائض وجبات المساء الساخنة بجودة ممتازة.',
+    image_url: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600&auto=format&fit=crop&q=80',
+    original_price: 4.75,
+    discounted_price: 2.00,
+    quantity_available: 15,
+    initial_quantity: 20,
+    pickup_start: '21:00',
+    pickup_end: '23:45',
+    category: 'وجبات سريعة',
+    is_active: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'offer-3',
+    store_id: 'store-3',
+    store_name: 'حلويات النجمة الأصيلة',
+    store_logo: 'https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=150&auto=format&fit=crop&q=80',
+    store_location: 'إربد - شارع الجامعة',
+    store_phone: '0799887766',
+    title: 'صحن حلويات مشكل فاخر (بقلاوة ووربات)',
+    description: 'صحن نصف كيلو غرام مشكل من البقلاوة والوربات بالقشطة والمكسرات المحمصة طازج وفاخر.',
+    image_url: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?w=600&auto=format&fit=crop&q=80',
+    original_price: 7.00,
+    discounted_price: 3.25,
+    quantity_available: 5,
+    initial_quantity: 10,
+    pickup_start: '20:00',
+    pickup_end: '23:00',
+    category: 'حلويات',
+    is_active: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'offer-4',
+    store_id: 'store-4',
+    store_name: 'مطعم القدس العريق',
+    store_logo: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=150&auto=format&fit=crop&q=80',
+    store_location: 'عمان - وسط البلد',
+    store_phone: '0771122334',
+    title: 'وجبة أرز شرقي مع دجاج مشوي وسلطة',
+    description: 'وجبة غداء/عشاء متكاملة من الأرز المبهر مع نصف دجاجة مشوية وسلطة خضراء طازجة.',
+    image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
+    original_price: 6.00,
+    discounted_price: 2.75,
+    quantity_available: 7,
+    initial_quantity: 14,
+    pickup_start: '18:30',
+    pickup_end: '21:30',
+    category: 'وجبات ومطاعم',
+    is_active: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'offer-5',
+    store_id: 'store-5',
+    store_name: 'مخبز الشرق الأوسط الجديد',
+    store_logo: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=150&auto=format&fit=crop&q=80',
+    store_location: 'الزرقاء - الزرقاء الجديدة',
+    store_phone: '0785566778',
+    title: 'كيس خبز حمام وكعك بالسمسم كبير',
+    description: 'ربطة خبز حمام مشكل طازج مع 4 حبات كعك بالسمسم الساخن المقرمش.',
+    image_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
+    original_price: 3.50,
+    discounted_price: 1.50,
+    quantity_available: 12,
+    initial_quantity: 18,
+    pickup_start: '19:00',
+    pickup_end: '22:00',
+    category: 'مخابز ومعجنات',
+    is_active: true,
+    created_at: new Date().toISOString()
+  }
+];
+
+export const INITIAL_RESERVATIONS: Reservation[] = [
+  {
+    id: 'res-1',
+    booking_code: 'WFR-84920',
+    offer_id: 'offer-1',
+    offer_title: 'سلة معجنات وكرواسون مخبوز اليوم',
+    offer_image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&auto=format&fit=crop&q=80',
+    store_id: 'store-1',
+    store_name: 'مخابز السفراء الحديثة',
+    store_location: 'عمان - الجبيهة',
+    store_phone: '0791234567',
+    customer_name: 'عبدالله المجالي',
+    customer_phone: '0795551234',
+    quantity: 2,
+    unit_price: 2.25,
+    total_price: 4.50,
+    expected_arrival: 'اليوم بين 8:30 و 9:00 مساءً',
+    status: 'confirmed',
+    is_large_order: false,
+    created_at: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: 'res-2',
+    booking_code: 'WFR-71829',
+    offer_id: 'offer-2',
+    offer_title: 'وجبة شاورما عربي دبل مع بطاطا ومثومة',
+    offer_image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600&auto=format&fit=crop&q=80',
+    store_id: 'store-2',
+    store_name: 'شاورما خان زيد',
+    store_location: 'عمان - شارع الجامعة',
+    store_phone: '0787654321',
+    customer_name: 'رنا العبادي',
+    customer_phone: '0781112233',
+    quantity: 12, // 12 out of 20 = 60% -> Large Order!
+    unit_price: 2.00,
+    total_price: 24.00,
+    expected_arrival: 'اليوم الساعة 10:15 مساءً',
+    status: 'pending',
+    is_large_order: true, // Trigger urgent repetitive alert!
+    created_at: new Date(Date.now() - 600000).toISOString()
+  }
+];
+
+export const INITIAL_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'notif-1',
+    title: 'تم تأكيد حجزك بنجاح! 🎉',
+    message: 'وافق مخابز السفراء الحديثة على طلبك رقم WFR-84920. فاتورتك جاهزة للاستلام نقداً.',
+    type: 'regular',
+    is_read: false,
+    created_at: new Date(Date.now() - 1800000).toISOString()
+  },
+  {
+    id: 'notif-2',
+    title: '⚠️ تنبيه عاجل: طلب حجز كمية كبيرة (60%)!',
+    message: 'قام الزبون رنا العبادي بطلب 12 وجبة من أصل 20 وجبة معروضة (تجاوز 50%). يرجى مراجعة الطلب فوراً.',
+    type: 'urgent',
+    is_read: false,
+    created_at: new Date(Date.now() - 600000).toISOString()
+  }
+];
+
+export const INITIAL_COMPLAINTS: Complaint[] = [
+  {
+    id: 'comp-1',
+    reservation_id: 'res-1',
+    user_name: 'أحمد التميمي',
+    user_phone: '0791122334',
+    store_name: 'مخابز السفراء الحديثة',
+    subject: 'تأخر تسليم الطلب 15 دقيقة',
+    description: 'وصلت في الموعد المحدد ولكن تم تجهيز العرض بعد ربع ساعة من وصولي.',
+    status: 'investigating',
+    staff_notes: 'تم التواصل مع المتجر للتأكيد على تجهيز السلة فور تأكيد الحجز.',
+    created_at: new Date(Date.now() - 86400000).toISOString()
+  }
+];
