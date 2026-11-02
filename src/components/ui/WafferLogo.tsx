@@ -16,94 +16,77 @@ export const WafferLogo: React.FC<WafferLogoProps> = ({
   className = '',
 }) => {
   const sizeMap = {
-    sm: { box: 'w-9 h-9', text: 'text-lg', subtext: 'text-[10px]' },
-    md: { box: 'w-12 h-12', text: 'text-2xl', subtext: 'text-xs' },
-    lg: { box: 'w-16 h-16', text: 'text-3xl', subtext: 'text-sm' },
-    xl: { box: 'w-24 h-24', text: 'text-4xl', subtext: 'text-base' },
+    sm: { box: 'w-9 h-9', icon: 36, text: 'text-lg', subtext: 'text-[10px]' },
+    md: { box: 'w-12 h-12', icon: 48, text: 'text-2xl', subtext: 'text-xs' },
+    lg: { box: 'w-16 h-16', icon: 64, text: 'text-3xl', subtext: 'text-sm' },
+    xl: { box: 'w-24 h-24', icon: 96, text: 'text-4xl', subtext: 'text-base' },
   };
 
   const currentSize = sizeMap[size];
 
   return (
-    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* Clean Vector Brand Icon */}
+    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+      {/* Iconic Single-Letter 'و' Luxury Squircle Mark */}
       <div
-        className={`relative ${currentSize.box} shrink-0 ${
+        className={`relative ${currentSize.box} shrink-0 rounded-2xl overflow-hidden shadow-md shadow-emerald-900/20 ${
           animated ? 'animate-[float3d_4s_ease-in-out_infinite]' : ''
         }`}
       >
         <svg
           viewBox="0 0 120 120"
-          className="w-full h-full drop-shadow-[0_4px_10px_rgba(22,163,74,0.2)]"
+          className="w-full h-full"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="wafferBagGrad" x1="20" y1="20" x2="100" y2="110" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#22C55E" />
-              <stop offset="60%" stopColor="#16A34A" />
-              <stop offset="100%" stopColor="#15803D" />
+            {/* Royal Emerald Luxury Gradient */}
+            <linearGradient id="luxuryBg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#10B981" />
+              <stop offset="50%" stopColor="#059669" />
+              <stop offset="100%" stopColor="#047857" />
             </linearGradient>
 
-            <linearGradient id="wafferHandleGrad" x1="40" y1="10" x2="80" y2="40" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#FBBF24" />
-              <stop offset="100%" stopColor="#D97706" />
+            {/* Letter 'و' Crisp White Shading */}
+            <linearGradient id="letterGrad" x1="40" y1="20" x2="80" y2="100" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="#F1F5F9" />
             </linearGradient>
 
-            <linearGradient id="wafferCoinGrad" x1="45" y1="52" x2="75" y2="85" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#FDE68A" />
-              <stop offset="40%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#B45309" />
-            </linearGradient>
+            <filter id="letterShadow" x="-10%" y="-10%" width="120%" height="130%">
+              <feDropShadow dx="0" dy="3" stdDeviation="2.5" floodColor="#022c22" floodOpacity="0.35" />
+            </filter>
           </defs>
 
-          {/* Handle */}
+          {/* Luxury Squircle Base */}
+          <rect width="120" height="120" rx="30" fill="url(#luxuryBg)" />
+          {/* Inner Precision Rim */}
+          <rect x="2" y="2" width="116" height="116" rx="28" stroke="white" strokeOpacity="0.2" strokeWidth="2" />
+
+          {/* The Iconic Single Letter 'و' (Waw) - Bold, Minimalist, Crystal Clear from Afar */}
           <path
-            d="M44 34 V22 C44 13 51 8 60 8 C69 8 76 13 76 22 V34"
-            stroke="url(#wafferHandleGrad)"
-            strokeWidth="7"
-            strokeLinecap="round"
+            d="M 64 25
+               C 47 25, 34 38, 34 54
+               C 34 69, 46 80, 61 80
+               C 68 80, 75 77, 80 71
+               C 76 84, 64 94, 46 96
+               C 41 96.5, 38 100, 40 104
+               C 42 107, 46 108, 51 107
+               C 76 103, 93 85, 93 57
+               C 93 39, 80 25, 64 25 Z
+               M 63 39
+               C 71 39, 78 45, 78 53
+               C 78 61, 71 67, 63 67
+               C 55 67, 48 61, 48 53
+               C 48 45, 55 39, 63 39 Z"
+            fill="url(#letterGrad)"
+            filter="url(#letterShadow)"
           />
 
-          {/* Bag Body */}
+          {/* Minimal Sprout Cusp (A subtle symbol of fresh food & barakah) */}
           <path
-            d="M28 38 C28 32 32 29 38 29 H82 C88 29 92 32 92 38 L86 102 C86 107 81 111 76 111 H44 C39 111 34 107 34 102 L28 38 Z"
-            fill="url(#wafferBagGrad)"
+            d="M 76 21 C 79 12, 90 10, 96 11 C 96 18, 90 26, 81 26 C 79 26, 76 24, 76 21 Z"
+            fill="#34D399"
           />
-
-          {/* Top Edge Reflection */}
-          <path
-            d="M38 29 H82 C86 29 89 31 90 35 L89 39 H31 L30 35 C31 31 34 29 38 29 Z"
-            fill="white"
-            fillOpacity="0.25"
-          />
-
-          {/* Golden Savings Coin in Center */}
-          <g transform="translate(60, 70)">
-            <circle r="16" fill="url(#wafferCoinGrad)" stroke="#FEF3C7" strokeWidth="2" />
-            {/* Arabic 'و' Calligraphic Seal for Waffer */}
-            <path
-              d="M3 -6 C5 -3 4 2 0 4 C-4 5 -7 1 -5 -3 C-3 -6 0 -7 3 -6 Z M0 4 L-3 9"
-              stroke="#78350F"
-              strokeWidth="2"
-              strokeLinecap="round"
-              fill="none"
-            />
-          </g>
-
-          {/* Sprout Freshness Leaf */}
-          <g transform="translate(74, 10)">
-            <path
-              d="M0 22 C2 10 12 2 24 2 C24 12 16 22 4 24 Z"
-              fill="#4ADE80"
-            />
-            <path
-              d="M5 21 C12 14 17 7 22 4"
-              stroke="#DCFCE7"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </g>
         </svg>
       </div>
 

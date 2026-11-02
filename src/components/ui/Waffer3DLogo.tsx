@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 
 interface Waffer3DLogoProps {
   className?: string;
-  size?: number; // size in pixels (default 150)
+  size?: number; // size in pixels (default 140)
   enableTilt?: boolean;
 }
 
 export const Waffer3DLogo: React.FC<Waffer3DLogoProps> = ({
   className = '',
-  size = 150,
+  size = 140,
   enableTilt = true,
 }) => {
   const [rotation, setRotation] = useState({ x: 8, y: -6 });
@@ -24,8 +24,8 @@ export const Waffer3DLogo: React.FC<Waffer3DLogoProps> = ({
 
     const loop = () => {
       const elapsed = (Date.now() - start) / 1000;
-      const x = Math.sin(elapsed * 1.6) * 6 + 6;
-      const y = Math.cos(elapsed * 1.3) * 8 - 4;
+      const x = Math.sin(elapsed * 1.5) * 5 + 6;
+      const y = Math.cos(elapsed * 1.2) * 6 - 4;
       setRotation({ x, y });
       frame = requestAnimationFrame(loop);
     };
@@ -51,7 +51,7 @@ export const Waffer3DLogo: React.FC<Waffer3DLogoProps> = ({
       style={{
         width: size,
         height: size,
-        perspective: '900px',
+        perspective: '800px',
       }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
@@ -67,111 +67,77 @@ export const Waffer3DLogo: React.FC<Waffer3DLogoProps> = ({
       >
         {/* Soft Ambient Shadow */}
         <div
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-5 rounded-full bg-emerald-950/15 blur-md pointer-events-none transition-all duration-300"
-          style={{ transform: 'translateZ(-40px)' }}
+          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4/5 h-6 rounded-3xl bg-emerald-950/20 blur-md pointer-events-none transition-all duration-300"
+          style={{ transform: 'translateZ(-30px)' }}
         />
 
-        {/* Layer 1: Clean Vector Bag Body */}
+        {/* Layer 1: Luxury Squircle Base */}
         <div
-          className="w-full h-full relative"
+          className="w-full h-full relative rounded-[32px] overflow-hidden shadow-xl shadow-emerald-950/25"
           style={{ transform: 'translateZ(0px)' }}
         >
           <svg
-            viewBox="0 0 160 160"
-            className="w-full h-full drop-shadow-[0_12px_20px_rgba(22,163,74,0.25)]"
+            viewBox="0 0 140 140"
+            className="w-full h-full"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <defs>
-              <linearGradient id="bagGrad3D" x1="20" y1="20" x2="140" y2="150" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#22C55E" />
-                <stop offset="45%" stopColor="#16A34A" />
-                <stop offset="100%" stopColor="#15803D" />
+              <linearGradient id="luxurySquircleBg" x1="0" y1="0" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#10B981" />
+                <stop offset="45%" stopColor="#059669" />
+                <stop offset="100%" stopColor="#047857" />
               </linearGradient>
 
-              <linearGradient id="handleGrad3D" x1="50" y1="10" x2="110" y2="50" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#FDE68A" />
-                <stop offset="60%" stopColor="#F59E0B" />
-                <stop offset="100%" stopColor="#D97706" />
+              <linearGradient id="wawLetterGrad" x1="45" y1="25" x2="95" y2="115" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="85%" stopColor="#F8FAFC" />
+                <stop offset="100%" stopColor="#E2E8F0" />
               </linearGradient>
 
-              <linearGradient id="leafGrad3D" x1="90" y1="15" x2="150" y2="60" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#86EFAC" />
-                <stop offset="50%" stopColor="#22C55E" />
-                <stop offset="100%" stopColor="#15803D" />
-              </linearGradient>
-
-              <linearGradient id="coinGrad3D" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#FEF08A" />
-                <stop offset="40%" stopColor="#FBBF24" />
-                <stop offset="100%" stopColor="#D97706" />
-              </linearGradient>
+              <filter id="wawShadow" x="-15%" y="-15%" width="130%" height="130%">
+                <feDropShadow dx="0" dy="5" stdDeviation="3.5" floodColor="#022c22" floodOpacity="0.4" />
+              </filter>
             </defs>
 
-            {/* Handle */}
+            {/* Squircle Background Tile */}
+            <rect width="140" height="140" rx="34" fill="url(#luxurySquircleBg)" />
+            {/* Subtle Luxury Inset Border */}
+            <rect x="2.5" y="2.5" width="135" height="135" rx="31.5" stroke="white" strokeOpacity="0.22" strokeWidth="2.5" />
+
+            {/* The Iconic Single Letter 'و' (Waw) */}
             <path
-              d="M56 46 V30 C56 16 66 8 80 8 C94 8 104 16 104 30 V46"
-              stroke="url(#handleGrad3D)"
-              strokeWidth="10"
-              strokeLinecap="round"
+              d="M 74 29
+                 C 54 29, 39 44, 39 63
+                 C 39 80, 53 93, 71 93
+                 C 79 93, 87 89, 93 82
+                 C 88 97, 74 109, 53 111
+                 C 47 111.5, 44 116, 46 120
+                 C 48 124, 53 125, 59 124
+                 C 88 119, 108 98, 108 66
+                 C 108 45, 93 29, 74 29 Z
+                 M 73 45
+                 C 82 45, 90 52, 90 61
+                 C 90 70, 82 77, 73 77
+                 C 64 77, 56 70, 56 61
+                 C 56 52, 64 45, 73 45 Z"
+              fill="url(#wawLetterGrad)"
+              filter="url(#wawShadow)"
             />
 
-            {/* Bag Body */}
+            {/* Subtle Fresh Food Sprout Cusp */}
             <path
-              d="M34 50 C34 42 40 38 48 38 H112 C120 38 126 42 126 50 L118 134 C118 142 110 148 102 148 H58 C50 148 42 142 42 134 L34 50 Z"
-              fill="url(#bagGrad3D)"
+              d="M 88 24 C 91 14, 104 12, 111 13 C 111 21, 104 30, 94 30 C 91 30, 88 28, 88 24 Z"
+              fill="#34D399"
             />
 
-            {/* Top Rim Trim */}
+            {/* Diagonal Specular Sheen across Squircle */}
             <path
-              d="M48 38 H112 C118 38 123 42 123 47 L122 53 H38 L37 47 C37 42 42 38 48 38 Z"
+              d="M 0 0 L 70 0 L 0 70 Z"
               fill="white"
-              fillOpacity="0.25"
-            />
-
-            {/* Curved Highlight */}
-            <path
-              d="M42 48 L48 132 C48 135 50 137 53 137 L49 48 Z"
-              fill="white"
-              fillOpacity="0.18"
+              fillOpacity="0.1"
             />
           </svg>
-        </div>
-
-        {/* Layer 2: Popping 3D Golden Savings Coin (NO 70%!) */}
-        <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          style={{ transform: 'translateZ(28px) translateY(12px)' }}
-        >
-          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 p-[2.5px] shadow-[0_6px_14px_rgba(217,119,6,0.35)] flex items-center justify-center">
-            <div className="w-full h-full rounded-full bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 flex flex-col items-center justify-center text-amber-950 font-black shadow-inner">
-              {/* Elegant Arabic 'و' seal with coin ring */}
-              <span className="text-xl leading-none font-black text-amber-950 tracking-tighter drop-shadow-xs">
-                وفّـر
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Layer 3: Popping Fresh Food Sprout Leaf */}
-        <div
-          className="absolute top-2 -right-1 pointer-events-none"
-          style={{ transform: 'translateZ(36px)' }}
-        >
-          <div className="w-11 h-11 drop-shadow-[0_4px_8px_rgba(22,163,74,0.3)]">
-            <svg viewBox="0 0 48 48" className="w-full h-full" fill="none">
-              <path
-                d="M4 44 C8 24 24 6 44 4 C44 24 30 42 12 44 Z"
-                fill="url(#leafGrad3D)"
-              />
-              <path
-                d="M10 42 C20 30 28 18 38 10"
-                stroke="#DCFCE7"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
         </div>
       </div>
     </div>
