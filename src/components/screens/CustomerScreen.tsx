@@ -30,6 +30,7 @@ import {
   TrendingDown,
   ExternalLink
 } from 'lucide-react';
+import { WafferLogo } from '@/components/ui/WafferLogo';
 
 export const CustomerScreen: React.FC = () => {
   const {
@@ -125,13 +126,11 @@ export const CustomerScreen: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-6">
           {/* Logo & City Selector */}
           <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('home')}>
-              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-base shadow-sm">
-                وفّر
-              </div>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
+              <WafferLogo size="sm" showText={false} animated={false} />
               <div>
                 <span className="font-black text-xl text-slate-900 tracking-tight">
-                  وفّر <span className="text-emerald-600 text-sm font-bold">Waffer</span>
+                  وفّـر <span className="text-emerald-600 text-sm font-bold">Waffer</span>
                 </span>
                 <span className="text-[11px] text-slate-600 block -mt-1 font-medium">
                   منصة توفير فائض الطعام في الأردن 🇯🇴
@@ -254,11 +253,9 @@ export const CustomerScreen: React.FC = () => {
       </header>
 
       {/* ===================== MOBILE TOP BAR (Hidden on Desktop) ===================== */}
-      <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
-            وفّر
-          </div>
+      <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-2">
+          <WafferLogo size="sm" showText={false} />
           <div>
             <div className="flex items-center gap-1 text-[11px] text-slate-600 font-medium">
               <MapPin className="w-3.5 h-3.5 text-emerald-600" />

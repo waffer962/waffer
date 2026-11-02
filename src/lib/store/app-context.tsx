@@ -112,7 +112,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('login');
+  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('splash');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('guest');
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
 

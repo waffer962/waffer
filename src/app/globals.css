@@ -41,3 +41,38 @@ body {
     box-shadow: none !important;
   }
 }
+
+/* 3D Keyframe Animations for Waffer Logo and Splash */
+@keyframes float3d {
+  0%, 100% {
+    transform: translateY(0px) rotateX(4deg) rotateY(-4deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateX(8deg) rotateY(6deg);
+  }
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-150%) rotate(25deg);
+  }
+  50%, 100% {
+    transform: translateX(180%) rotate(25deg);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+}
+

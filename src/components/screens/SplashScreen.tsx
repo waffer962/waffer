@@ -2,81 +2,109 @@
 
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/lib/store/app-context';
-import { Sparkles, Utensils, HeartHandshake, ArrowLeft } from 'lucide-react';
+import { Waffer3DLogo } from '@/components/ui/Waffer3DLogo';
+import { Sparkles, ArrowLeft, ShieldCheck, HeartHandshake } from 'lucide-react';
 
 export const SplashScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
   const [progress, setProgress] = useState(0);
 
+  // Quick and smooth ~1.8s intro animation
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(() => setCurrentScreen('login'), 300);
+          setTimeout(() => setCurrentScreen('login'), 200);
           return 100;
         }
-        return prev + 4;
+        return prev + 6;
       });
-    }, 60);
+    }, 45);
 
     return () => clearInterval(timer);
   }, [setCurrentScreen]);
 
-  return (
-    <div className="flex-1 w-full flex flex-col items-center justify-between min-h-[85vh] p-6 sm:p-12 bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-white relative overflow-hidden select-none">
-      {/* Decorative background glow circles */}
-      <div className="absolute top-10 right-10 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+  const handleSkip = () => {
+    setCurrentScreen('login');
+  };
 
-      {/* Top Tagline */}
-      <div className="w-full max-w-5xl flex justify-between items-center z-10 pt-2">
-        <span className="text-xs sm:text-sm font-bold tracking-wider text-emerald-300 bg-emerald-500/15 px-4 py-1.5 rounded-full border border-emerald-500/30">
-          المملكة الأردنية الهاشمية 🇯🇴
+  return (
+    <div
+      onClick={handleSkip}
+      className="flex-1 w-full flex flex-col items-center justify-between min-h-screen p-6 sm:p-10 bg-gradient-to-b from-white via-slate-50 to-emerald-50/50 text-slate-900 relative overflow-hidden select-none cursor-pointer"
+    >
+      {/* Decorative ambient background glows */}
+      <div className="absolute top-[-10%] right-[-10%] w-[420px] h-[420px] bg-emerald-200/35 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[380px] h-[380px] bg-amber-200/30 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Top Bar: Country Badge & Instant Skip Button */}
+      <div className="w-full max-w-md flex justify-between items-center z-10 pt-2">
+        <span className="text-xs font-bold text-emerald-800 bg-emerald-100/80 px-3.5 py-1.5 rounded-full border border-emerald-300/60 shadow-xs flex items-center gap-1.5">
+          <span>المملكة الأردنية الهاشمية</span>
+          <span>🇯🇴</span>
         </span>
         <button
-          onClick={() => setCurrentScreen('login')}
-          className="text-xs sm:text-sm text-slate-300 hover:text-white flex items-center gap-1 transition"
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSkip();
+          }}
+          className="text-xs font-bold text-slate-500 hover:text-emerald-700 bg-white/90 hover:bg-emerald-50 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs flex items-center gap-1 transition"
         >
           <span>تخطي</span>
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Center Animated Logo & Branding */}
-      <div className="flex flex-col items-center text-center z-10 my-auto py-10">
-        <div className="relative mb-8">
-          <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-2xl shadow-emerald-500/30 ring-8 ring-emerald-400/20 animate-pulse">
-            <Utensils className="w-14 h-14 sm:w-18 sm:h-18 text-slate-950" />
-          </div>
-          <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center shadow-lg font-bold text-sm">
-            <Sparkles className="w-5 h-5" />
-          </div>
+      {/* Center 3D Logo & Brand Intro */}
+      <div className="flex flex-col items-center text-center z-10 my-auto py-6 space-y-6 max-w-sm">
+        {/* Animated 3D Waffer Emblem */}
+        <div className="relative">
+          <Waffer3DLogo size={160} enableTilt={true} />
         </div>
 
-        <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white mb-3 drop-shadow-lg">
-          وفّر <span className="text-emerald-400 font-bold text-4xl sm:text-5xl">Waffer</span>
-        </h1>
-        <p className="text-emerald-100/90 text-sm sm:text-lg max-w-md font-semibold leading-relaxed">
-          طعام طازج بأسعار مخفضة.. لتقليل الهدر وحماية البيئة في الأردن
-        </p>
+        {/* Brand Name & Typography */}
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2">
+            <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              تطبيق <span className="text-emerald-600">وفّـر</span>
+            </h1>
+            <span className="text-xs font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300">
+              WAFFER
+            </span>
+          </div>
+
+          <p className="text-slate-600 text-sm sm:text-base font-bold">
+            حفظ النعمة.. وأوفر لجيبتك
+          </p>
+
+          <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+            منصة حجز فائض وجبات المطاعم والمخابز بأسعار مخفضة حتى 70% والدفع عند الاستلام
+          </p>
+        </div>
       </div>
 
-      {/* Bottom Progress & Pillars */}
-      <div className="w-full max-w-md z-10 flex flex-col items-center gap-4 pb-4">
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-emerald-200/90 font-medium">
-          <HeartHandshake className="w-4 h-4 text-emerald-400" />
-          <span>مطاعم ومخابز • وجبات بخصم حتى 70% • استلام مباشر</span>
+      {/* Bottom Progress Bar & Trust Indicator */}
+      <div className="w-full max-w-xs z-10 flex flex-col items-center gap-3 pb-4">
+        {/* Features Pills */}
+        <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-800 bg-emerald-50/90 px-3 py-1 rounded-full border border-emerald-200/70">
+          <HeartHandshake className="w-3.5 h-3.5 text-emerald-600" />
+          <span>مطاعم معتمدة • استلام مباشر • كاش</span>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-full bg-slate-900/80 h-2 rounded-full overflow-hidden border border-slate-700/60 shadow-inner">
+        {/* Elegant Animated Progress Bar */}
+        <div className="w-full bg-slate-200/80 h-2 rounded-full overflow-hidden shadow-inner p-0.5">
           <div
-            className="bg-gradient-to-r from-emerald-400 to-teal-300 h-full transition-all duration-100 ease-out"
+            className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-100 ease-out shadow-xs"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <span className="text-xs text-slate-400 font-mono">جاري تجهيز المنصة... {progress}%</span>
+
+        <div className="flex items-center justify-between w-full text-[11px] text-slate-400 font-medium">
+          <span>انقر في أي مكان للدخول السريع</span>
+          <span className="font-mono text-emerald-600 font-bold">{progress}%</span>
+        </div>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import {
   Store,
   LifeBuoy
 } from 'lucide-react';
+import { WafferLogo } from '@/components/ui/WafferLogo';
 
 export const LoginScreen: React.FC = () => {
   const { loginAsGoogle, loginWithEmail, loginAsGuest } = useApp();
@@ -44,18 +45,18 @@ export const LoginScreen: React.FC = () => {
       {/* Container card with clean commercial shopping look */}
       <div className="max-w-md w-full bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-between space-y-6">
         
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          {/* Logo badge */}
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-600 text-white font-black text-2xl shadow-md shadow-emerald-600/20 mb-1">
-            وفّر
+        {/* Brand Header with Sculpted Logo */}
+        <div className="flex flex-col items-center text-center space-y-3">
+          <WafferLogo size="lg" showText={false} animated={true} />
+          
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              تطبيق <span className="text-emerald-600">وفّـر</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xs mx-auto leading-relaxed">
+              منصة شراء فائض الوجبات بأسعار مخفضة وتقليل الهدر في الأردن 🇯🇴
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            تطبيق <span className="text-emerald-600">وفّر</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-xs mx-auto leading-relaxed">
-            منصة شراء فائض الوجبات بأسعار مخفضة وتقليل الهدر في الأردن 🇯🇴
-          </p>
         </div>
 
         {/* 1. Google Sign-In Button */}
