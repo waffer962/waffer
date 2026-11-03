@@ -81,6 +81,7 @@ export const StoreScreen: React.FC = () => {
   const [pickupStart, setPickupStart] = useState('19:00');
   const [pickupEnd, setPickupEnd] = useState('22:30');
   const [offerCategory, setOfferCategory] = useState('مخابز ومعجنات');
+  const [isCharityFree, setIsCharityFree] = useState(false);
   const [offerSuccessMsg, setOfferSuccessMsg] = useState('');
 
   // Handle Register Store
@@ -111,6 +112,9 @@ export const StoreScreen: React.FC = () => {
     e.preventDefault();
     if (!currentStore) return;
 
+    const finalPrice = isCharityFree ? 0 : Number(discountedPrice);
+    const isFree = isCharityFree || finalPrice === 0;
+
     addOffer({
       store_id: currentStore.id,
       store_name: currentStore.name,
@@ -121,18 +125,21 @@ export const StoreScreen: React.FC = () => {
       description: offerDescription,
       image_url: offerImage,
       original_price: Number(originalPrice),
-      discounted_price: Number(discountedPrice),
+      discounted_price: finalPrice,
       quantity_available: Number(quantity),
       initial_quantity: Number(quantity),
       pickup_start: pickupStart,
       pickup_end: pickupEnd,
-      category: offerCategory,
+      category: isFree ? 'وجبات مجانية لوجه الله 💚' : offerCategory,
+      is_free: isFree,
+      charity_badge: isFree ? 'مجاناً لوجه الله تعالى 💚' : undefined,
       is_active: true
     });
 
     setOfferSuccessMsg('تمت إضافة العرض بنجاح وهو الآن معروض للزبائن!');
     setOfferTitle('');
     setOfferDescription('');
+    setIsCharityFree(false);
     setTimeout(() => {
       setOfferSuccessMsg('');
       setActiveTab('my_offers');
@@ -464,6 +471,36 @@ export const StoreScreen: React.FC = () => {
                 />
               </div>
 
+              {/* Charity Option: Free for God's sake or symbolic tiny price */}
+              <div className="p-4 bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl flex items-start gap-3 shadow-xs">
+                <input
+                  type="checkbox"
+                  id="charityFreeCheck"
+                  checked={isCharityFree}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setIsCharityFree(checked);
+                    if (checked) {
+                      setDiscountedPrice(0);
+                      setOfferCategory('وجبات مجانية لوجه الله 💚');
+                    } else {
+                      setDiscountedPrice(2.25);
+                      setOfferCategory('مخابز ومعجنات');
+                    }
+                  }}
+                  className="mt-1 w-5 h-5 text-emerald-600 rounded-lg border-emerald-400 focus:ring-emerald-500 cursor-pointer"
+                />
+                <label htmlFor="charityFreeCheck" className="text-xs cursor-pointer select-none">
+                  <span className="font-black text-emerald-900 block text-sm flex items-center gap-1.5">
+                    <span>تقديم الوجبة مجاناً لوجه الله تعالى (0.00 د.أ) 💚</span>
+                    <span className="text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">صدقة وبركة</span>
+                  </span>
+                  <span className="text-slate-600 font-medium block mt-1 leading-relaxed">
+                    مبادرة إطعام طعام وصدقة جارية للفقراء والمحتاجين وعابري السبيل. إذا كنت ترغب في وضع سعر قليل رمزي (مثل 0.25 أو 0.50 د.أ)، اترك الخيار غير محدد وضع السعر القليل في خانة السعر أدناه.
+                  </span>
+                </label>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-bold mb-1.5">السعر الأصلي المعتاد (دينار أردني):</label>
@@ -478,13 +515,21 @@ export const StoreScreen: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-emerald-700 font-bold mb-1.5">سعر البيع المخفض (دينار أردني):</label>
+                  <label className="block text-emerald-700 font-bold mb-1.5">
+                    سعر البيع المخفض (دينار أردني): {isCharityFree && <span className="text-emerald-600 font-bold">(مجاناً 0.00)</span>}
+                  </label>
                   <input
                     type="number"
                     step="0.25"
-                    value={discountedPrice}
+                    min="0"
+                    disabled={isCharityFree}
+                    value={isCharityFree ? 0 : discountedPrice}
                     onChange={(e) => setDiscountedPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-emerald-400 rounded-xl p-3 text-slate-900 font-bold focus:outline-none"
+                    className={`w-full border rounded-xl p-3 font-bold focus:outline-none ${
+                      isCharityFree 
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-400 font-black cursor-not-allowed' 
+                        : 'bg-slate-50 border-emerald-400 text-slate-900'
+                    }`}
                     required
                   />
                 </div>
@@ -694,7 +739,13 @@ export const StoreScreen: React.FC = () => {
                       <p className="text-xs text-slate-600 font-medium">
                         متبقي {offer.quantity_available} من {offer.initial_quantity} قطع
                       </p>
-                      <p className="font-black text-emerald-700 text-sm mt-1">{offer.discounted_price.toFixed(2)} د.أ</p>
+                      {offer.is_free || offer.discounted_price === 0 ? (
+                        <p className="font-black text-emerald-700 text-xs mt-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 inline-block">
+                          مجاناً لوجه الله تعالى 💚 (0.00 د.أ)
+                        </p>
+                      ) : (
+                        <p className="font-black text-emerald-700 text-sm mt-1">{offer.discounted_price.toFixed(2)} د.أ</p>
+                      )}
                     </div>
                   </div>
 

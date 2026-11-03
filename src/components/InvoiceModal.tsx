@@ -117,13 +117,17 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ reservation, onClose
                 {reservation.quantity}
               </span>
               <span className="col-span-4 text-left font-bold text-emerald-400 print:text-emerald-700">
-                {reservation.total_price.toFixed(2)} د.أ
+                {reservation.total_price === 0 ? (
+                  <span>مجاناً (0.00 د.أ) 💚</span>
+                ) : (
+                  <span>{reservation.total_price.toFixed(2)} د.أ</span>
+                )}
               </span>
             </div>
             <div className="bg-slate-950 print:bg-slate-100 px-3 py-2.5 flex justify-between items-center border-t border-slate-800 print:border-slate-300">
               <span className="font-bold text-slate-300 print:text-slate-700">طريقة الدفع:</span>
-              <span className="font-bold text-amber-400 print:text-amber-800">
-                نقداً عند الاستلام بالمتجر 💵
+              <span className="font-bold text-emerald-400 print:text-emerald-800">
+                {reservation.total_price === 0 ? 'مجاناً لوجه الله تعالى 💚' : 'نقداً عند الاستلام بالمتجر 💵'}
               </span>
             </div>
           </div>

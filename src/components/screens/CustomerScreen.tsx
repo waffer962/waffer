@@ -370,16 +370,26 @@ export const CustomerScreen: React.FC = () => {
       </header>
 
       {/* ===================== MOBILE TOP BAR (Hidden on Desktop) ===================== */}
-      <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-2">
+      <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-xs">
+        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('home')}>
           <WafferLogo size="sm" showText={false} />
           <div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-600 font-medium">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              <span>المحافظة:</span>
+            <div className="flex items-center gap-1">
+              <span className="font-black text-base text-slate-900 tracking-tight leading-none">
+                وفّـر
+              </span>
+              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">
+                WAFFER
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] text-slate-600 font-medium mt-0.5">
+              <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
               <select
                 value={selectedGov}
-                onChange={(e) => setSelectedGov(e.target.value)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setSelectedGov(e.target.value);
+                }}
                 className="bg-transparent text-emerald-700 font-bold focus:outline-none cursor-pointer"
               >
                 <option value="الكل" className="bg-white text-slate-900">كل الأردن 🇯🇴</option>
@@ -394,17 +404,17 @@ export const CustomerScreen: React.FC = () => {
         {currentUserRole === 'guest' ? (
           <button
             onClick={() => setCurrentScreen('login')}
-            className="text-xs font-bold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm"
+            className="text-xs font-bold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm shrink-0"
           >
             تسجيل دخول
           </button>
         ) : (
           <button
             onClick={() => setActiveTab('profile')}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-xl"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1.5 rounded-xl shrink-0"
           >
             <User className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{currentUser?.full_name?.split(' ')[0] || 'حسابي'}</span>
+            <span className="max-w-[75px] truncate">{currentUser?.full_name?.split(' ')[0] || 'حسابي'}</span>
           </button>
         )}
       </div>
@@ -514,16 +524,21 @@ export const CustomerScreen: React.FC = () => {
                 /* Multi-column Grid on PC & Tablet, Single on Mobile */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {filteredOffers.map((offer) => {
-                    const discountPercent = Math.round(
-                      ((offer.original_price - offer.discounted_price) / offer.original_price) * 100
-                    );
+                    const isFreeOffer = offer.is_free || offer.discounted_price === 0;
+                    const discountPercent = isFreeOffer
+                      ? 100
+                      : Math.round(
+                          ((offer.original_price - offer.discounted_price) / offer.original_price) * 100
+                        );
                     const isFav = favorites.includes(offer.id);
 
                     return (
                       <div
                         key={offer.id}
                         onClick={() => handleOpenOffer(offer)}
-                        className="group bg-white hover:bg-slate-50/50 border border-slate-200/90 rounded-3xl overflow-hidden transition-all duration-300 shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
+                        className={`group bg-white hover:bg-slate-50/50 border rounded-3xl overflow-hidden transition-all duration-300 shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between ${
+                          isFreeOffer ? 'border-emerald-300 ring-2 ring-emerald-500/20' : 'border-slate-200/90'
+                        }`}
                       >
                         {/* Image Banner */}
                         <div className="relative h-48 w-full overflow-hidden bg-slate-100">
@@ -545,6 +560,10 @@ export const CustomerScreen: React.FC = () => {
                             >
                               <span>✏️ تعديل العرض</span>
                             </button>
+                          ) : isFreeOffer ? (
+                            <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs shadow-md border border-white/20 flex items-center gap-1">
+                              <span>مجاناً لوجه الله 💚</span>
+                            </div>
                           ) : (
                             <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-amber-500 text-white font-black text-xs shadow-md">
                               وفر {discountPercent}%
@@ -614,22 +633,44 @@ export const CustomerScreen: React.FC = () => {
                           {/* Pricing and Action */}
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                             <div>
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-lg font-black text-emerald-700">
-                                  {offer.discounted_price.toFixed(2)} د.أ
-                                </span>
-                                <span className="text-xs line-through text-slate-600 font-medium">
-                                  {offer.original_price.toFixed(2)} د.أ
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-slate-600 font-medium">الدفع نقداً بالمتجر 💵</span>
+                              {isFreeOffer ? (
+                                <div>
+                                  <div className="flex items-baseline gap-1.5">
+                                    <span className="text-base sm:text-lg font-black text-emerald-700">
+                                      مجاناً (0.00 د.أ)
+                                    </span>
+                                    <span className="text-xs line-through text-slate-400 font-medium">
+                                      {offer.original_price.toFixed(2)} د.أ
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md font-bold block mt-0.5">
+                                    صدقة وبركة لوجه الله 🌱
+                                  </span>
+                                </div>
+                              ) : (
+                                <div>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-lg font-black text-emerald-700">
+                                      {offer.discounted_price.toFixed(2)} د.أ
+                                    </span>
+                                    <span className="text-xs line-through text-slate-600 font-medium">
+                                      {offer.original_price.toFixed(2)} د.أ
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-600 font-medium">الدفع نقداً بالمتجر 💵</span>
+                                </div>
+                              )}
                             </div>
 
                             <button
                               type="button"
-                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs active:scale-95 cursor-pointer"
+                              className={`px-4 py-2 text-white rounded-xl text-xs font-bold transition shadow-xs active:scale-95 cursor-pointer ${
+                                isFreeOffer
+                                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
+                                  : 'bg-emerald-600 hover:bg-emerald-700'
+                              }`}
                             >
-                              حجز الوجبة
+                              {isFreeOffer ? 'حجز مجاني 💚' : 'حجز الوجبة'}
                             </button>
                           </div>
                         </div>
@@ -825,7 +866,9 @@ export const CustomerScreen: React.FC = () => {
                         <div className="flex justify-between text-slate-600 text-xs">
                           <span>طريقة الدفع:</span>
                           <span className="font-bold text-emerald-700">
-                            {res.total_price.toFixed(2)} د.أ (نقدًا عند الاستلام 💵)
+                            {res.total_price === 0
+                              ? 'مجاناً لوجه الله تعالى 💚'
+                              : `${res.total_price.toFixed(2)} د.أ (نقدًا عند الاستلام 💵)`}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-600 pt-1 border-t border-slate-200">
@@ -974,7 +1017,14 @@ export const CustomerScreen: React.FC = () => {
                 <h3 className="text-xl font-bold text-slate-900">تم إرسال طلب الحجز إلى المتجر بنجاح!</h3>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1.5">
                   <p>كود الحجز: <span className="font-mono font-black text-emerald-700 text-base">{bookingSuccess.booking_code}</span></p>
-                  <p>المبلغ الإجمالي للدفع نقدًا: <span className="font-black text-emerald-700 text-base">{bookingSuccess.total_price.toFixed(2)} د.أ</span></p>
+                  <p>
+                    المبلغ الإجمالي:{' '}
+                    <span className="font-black text-emerald-700 text-base">
+                      {bookingSuccess.total_price === 0
+                        ? '0.00 د.أ (مجاناً لوجه الله تعالى 💚)'
+                        : `${bookingSuccess.total_price.toFixed(2)} د.أ (نقدًا عند الاستلام)`}
+                    </span>
+                  </p>
                 </div>
 
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-xs">
@@ -1011,9 +1061,15 @@ export const CustomerScreen: React.FC = () => {
                       alt={selectedOffer.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white font-black text-xs rounded-xl shadow-md">
-                      وفر {Math.round(((selectedOffer.original_price - selectedOffer.discounted_price) / selectedOffer.original_price) * 100)}%
-                    </div>
+                    {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
+                      <div className="absolute top-3 right-3 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs rounded-xl shadow-md border border-white/20 flex items-center gap-1.5">
+                        <span>مجاناً لوجه الله تعالى 💚</span>
+                      </div>
+                    ) : (
+                      <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white font-black text-xs rounded-xl shadow-md">
+                        وفر {Math.round(((selectedOffer.original_price - selectedOffer.discounted_price) / selectedOffer.original_price) * 100)}%
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -1050,16 +1106,29 @@ export const CustomerScreen: React.FC = () => {
                 <div className="space-y-4 bg-slate-50 p-5 rounded-3xl border border-slate-200">
                   <div className="flex justify-between items-center pb-3 border-b border-slate-200">
                     <div>
-                      <span className="text-[11px] text-slate-600 block font-medium">السعر المخفض للقطعة:</span>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-emerald-700">{selectedOffer.discounted_price.toFixed(2)} د.أ</span>
-                        <span className="line-through text-slate-600 text-xs font-medium">{selectedOffer.original_price.toFixed(2)} د.أ</span>
-                      </div>
+                      <span className="text-[11px] text-slate-600 block font-medium">السعر:</span>
+                      {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
+                        <div>
+                          <span className="text-2xl font-black text-emerald-700">مجاناً (0.00 د.أ)</span>
+                          <span className="text-[11px] text-emerald-700 block font-bold mt-0.5">وجبة صدقة وبركة لوجه الله تعالى 💚</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-black text-emerald-700">{selectedOffer.discounted_price.toFixed(2)} د.أ</span>
+                          <span className="line-through text-slate-600 text-xs font-medium">{selectedOffer.original_price.toFixed(2)} د.أ</span>
+                        </div>
+                      )}
                     </div>
                     <div className="text-left">
-                      <span className="text-xs font-bold text-emerald-700 block">
-                        توفير {(selectedOffer.original_price - selectedOffer.discounted_price).toFixed(2)} د.أ
-                      </span>
+                      {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-xl block">
+                          بدون أي مقابل نقدي
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold text-emerald-700 block">
+                          توفير {(selectedOffer.original_price - selectedOffer.discounted_price).toFixed(2)} د.أ
+                        </span>
+                      )}
                       <span className="text-[11px] text-slate-600 font-medium">متوفر: {selectedOffer.quantity_available} قطع</span>
                     </div>
                   </div>
@@ -1095,7 +1164,11 @@ export const CustomerScreen: React.FC = () => {
                         <div className="text-right">
                           <span className="text-slate-600 text-xs block font-medium">المجموع الإجمالي:</span>
                           <span className="text-base font-black text-emerald-700">
-                            {(reservationQty * selectedOffer.discounted_price).toFixed(2)} دينار أردني
+                            {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
+                              <span>0.00 دينار (مجاناً لوجه الله تعالى 💚)</span>
+                            ) : (
+                              <span>{(reservationQty * selectedOffer.discounted_price).toFixed(2)} دينار أردني</span>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1148,12 +1221,20 @@ export const CustomerScreen: React.FC = () => {
                     <div className="pt-2">
                       <button
                         type="submit"
-                        className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.98] cursor-pointer"
+                        className={`w-full py-3.5 text-white rounded-2xl font-black text-sm shadow-md transition active:scale-[0.98] cursor-pointer ${
+                          selectedOffer.is_free || selectedOffer.discounted_price === 0
+                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/30'
+                            : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
+                        }`}
                       >
-                        إرسال طلب الحجز إلى المتجر 🛒
+                        {selectedOffer.is_free || selectedOffer.discounted_price === 0
+                          ? 'تأكيد حجز الوجبة المجانية لوجه الله تعالى 💚'
+                          : 'إرسال طلب الحجز إلى المتجر 🛒'}
                       </button>
                       <p className="text-[11px] text-center text-slate-600 mt-2 font-medium">
-                        الدفع نقدًا عند الاستلام من المتجر • الحجز يخضع لموافقة صاحب المتجر
+                        {selectedOffer.is_free || selectedOffer.discounted_price === 0
+                          ? 'لا يتطلب أي دفع نقدي عند الاستلام • نسألكم الدعاء بالبركة والقبول'
+                          : 'الدفع نقدًا عند الاستلام من المتجر • الحجز يخضع لموافقة صاحب المتجر'}
                       </p>
                     </div>
                   </form>
@@ -1218,6 +1299,29 @@ export const CustomerScreen: React.FC = () => {
                   onChange={(e) => setEditOfferForm((prev) => ({ ...prev, image_url: e.target.value }))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 dir-ltr text-right focus:outline-none focus:border-amber-500 focus:bg-white"
                   required
+                />
+              </div>
+
+              {/* Charity free meal option */}
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-emerald-900 block">عرض مجاني لوجه الله تعالى (0.00 د.أ) 💚:</span>
+                  <span className="text-[10px] text-emerald-700">مبادرة صدقة جارية للفقراء والمحتاجين</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={editOfferForm.discounted_price === 0 || editOfferForm.is_free}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setEditOfferForm((prev) => ({
+                      ...prev,
+                      discounted_price: checked ? 0 : 2.0,
+                      is_free: checked,
+                      category: checked ? 'وجبات مجانية لوجه الله 💚' : (prev.category || 'وجبات ومطاعم'),
+                      charity_badge: checked ? 'مجاناً لوجه الله تعالى 💚' : undefined
+                    }));
+                  }}
+                  className="w-4 h-4 text-emerald-600 rounded-md cursor-pointer"
                 />
               </div>
 
@@ -1322,6 +1426,14 @@ export const CustomerScreen: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ===================== INVOICE POPUP MODAL ===================== */}
+      {viewInvoice && (
+        <InvoiceModal
+          reservation={viewInvoice}
+          onClose={() => setViewInvoice(null)}
+        />
       )}
 
       {/* ===================== ADMIN USERS & DATABASE DRAWER ===================== */}

@@ -51,6 +51,8 @@ export interface Offer {
   pickup_start: string; // e.g. "19:00"
   pickup_end: string; // e.g. "23:00"
   category: string;
+  is_free?: boolean; // وجبة مجانية لوجه الله تعالى
+  charity_badge?: string; // e.g. "لوجه الله تعالى 💚"
   is_active: boolean;
   created_at: string;
 }

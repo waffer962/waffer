@@ -17,6 +17,7 @@ export const JORDAN_GOVERNORATES = [
 
 export const FOOD_CATEGORIES = [
   'الكل',
+  'وجبات مجانية لوجه الله 💚',
   'مخابز ومعجنات',
   'وجبات ومطاعم',
   'وجبات سريعة',
@@ -129,6 +130,50 @@ export const INITIAL_STORES: Store[] = [
 ];
 
 export const INITIAL_OFFERS: Offer[] = [
+  {
+    id: 'offer-free-1',
+    store_id: 'store-1',
+    store_name: 'مخابز السفراء الحديثة',
+    store_logo: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=80',
+    store_location: 'عمان - الجبيهة',
+    store_phone: '0791234567',
+    title: 'سلة بركة مخبوزات طازجة (لوجه الله تعالى مجاناً)',
+    description: 'مبادرة إطعام طعام وصدقة جارية لوجه الله تعالى من مخابز السفراء: سلة خبز ومعجنات طازجة ومفيدة دون أي مقابل، متاحة لأي شخص محتاج أو راغب في بركة الطعام.',
+    image_url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
+    original_price: 3.50,
+    discounted_price: 0.00,
+    is_free: true,
+    charity_badge: 'مجاناً لوجه الله تعالى 💚',
+    quantity_available: 10,
+    initial_quantity: 15,
+    pickup_start: '18:00',
+    pickup_end: '22:00',
+    category: 'وجبات مجانية لوجه الله 💚',
+    is_active: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'offer-free-2',
+    store_id: 'store-4',
+    store_name: 'مطعم القدس العريق',
+    store_logo: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=150&auto=format&fit=crop&q=80',
+    store_location: 'عمان - وسط البلد',
+    store_phone: '0771122334',
+    title: 'وجبة أرز ودجاج دافئة (لوجه الله تعالى مجاناً)',
+    description: 'وجبة طعام دافئة وطازجة معدة بعناية مقدمة مجاناً لوجه الله تعالى وإكراماً للمحتاجين وعابري السبيل. نسألكم الدعاء بالبركة والقبول.',
+    image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
+    original_price: 5.00,
+    discounted_price: 0.00,
+    is_free: true,
+    charity_badge: 'مجاناً لوجه الله تعالى 💚',
+    quantity_available: 6,
+    initial_quantity: 10,
+    pickup_start: '19:00',
+    pickup_end: '21:30',
+    category: 'وجبات مجانية لوجه الله 💚',
+    is_active: true,
+    created_at: new Date().toISOString()
+  },
   {
     id: 'offer-1',
     store_id: 'store-1',
