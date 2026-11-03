@@ -182,48 +182,6 @@ export const LoginScreen: React.FC = () => {
               تسجيل الدخول
             </button>
           </form>
-
-          {/* Official Credentials Info Box (Non-bypass, requires typing email and password in the form above) */}
-          <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-700 flex items-center gap-1.5">
-                <span>🔐</span>
-                <span>بيانات الدخول الرسمية للإدارة والتشغيل:</span>
-              </span>
-              <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-bold border border-amber-200">
-                إدخال يدوي إجباري 🔒
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-right">
-              {/* Admin Credential Info */}
-              <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-xs shadow-2xs">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-black text-slate-900 text-[11px] flex items-center gap-1">
-                    <span>🛡️</span> المشرف (أدمن)
-                  </span>
-                  <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-bold">تعديل ✏️</span>
-                </div>
-                <p className="text-[10px] text-slate-600 font-mono select-all">admin@waffer.jo</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">الرمز: <span className="font-mono font-bold text-amber-700 select-all">admin123</span></p>
-              </div>
-
-              {/* Staff Credential Info */}
-              <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-xs shadow-2xs">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-black text-slate-900 text-[11px] flex items-center gap-1">
-                    <span>🎧</span> موظف الشكاوى
-                  </span>
-                  <span className="text-[9px] bg-sky-100 text-sky-800 px-1 py-0.5 rounded font-bold">طلبات 📋</span>
-                </div>
-                <p className="text-[10px] text-slate-600 font-mono select-all">staff@waffer.jo</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">الرمز: <span className="font-mono font-bold text-sky-700 select-all">staff123</span></p>
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-500 text-center font-medium leading-relaxed">
-              * للحفاظ على أمان الموقع، يرجى كتابة البريد وكلمة المرور الخاصة بك في خانات تسجيل الدخول أعلاه.
-            </p>
-          </div>
         </div>
 
         {/* 3. Guest Mode */}

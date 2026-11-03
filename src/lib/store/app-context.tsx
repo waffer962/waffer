@@ -652,13 +652,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (cleanEmail === 'admin@waffer.jo' || cleanEmail.includes('admin')) {
       if (!cleanPass || cleanPass !== 'admin123') {
-        return { success: false, error: 'كلمة المرور مطلوبة وغير صحيحة لحساب المشرف العام (كلمة المرور: admin123)' };
+        return { success: false, error: 'كلمة المرور غير صحيحة لحساب المشرف العام' };
       }
       determinedRole = 'admin';
       fullName = 'المشرف العام (أدمن وفّر)';
     } else if (cleanEmail === 'staff@waffer.jo' || cleanEmail === 'support@waffer.jo' || cleanEmail.includes('staff')) {
       if (!cleanPass || cleanPass !== 'staff123') {
-        return { success: false, error: 'كلمة المرور مطلوبة وغير صحيحة لحساب موظف الشكاوى والطلبات (كلمة المرور: staff123)' };
+        return { success: false, error: 'كلمة المرور غير صحيحة لحساب موظف الشكاوى' };
       }
       determinedRole = 'staff';
       fullName = 'موظف الشكاوى وإدارة الطلبات';
@@ -684,10 +684,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar_url: undefined
     };
 
-    // When Admin logs in, they go directly to the live customer view with Pencil edit mode!
+    // Auto-route directly based on role: Admin -> admin, Staff -> staff, Store -> store, Customer -> customer
     const targetScreen =
       determinedRole === 'admin'
-        ? 'customer'
+        ? 'admin'
         : determinedRole === 'staff'
         ? 'staff'
         : determinedRole === 'store_owner'

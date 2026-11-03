@@ -28,7 +28,8 @@ export const AdminScreen: React.FC = () => {
     deleteOffer,
     complaints,
     updateComplaintStatus,
-    logout
+    logout,
+    setCurrentScreen
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'stores' | 'offers' | 'staff' | 'content' | 'complaints'>('stores');
@@ -86,13 +87,22 @@ export const AdminScreen: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={logout}
-            className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>تسجيل الخروج</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentScreen('customer')}
+              className="text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 transition cursor-pointer shadow-2xs"
+            >
+              <span>تصفح وتعديل الموقع المباشر بالقلم ✏️</span>
+            </button>
+
+            <button
+              onClick={logout}
+              className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>تسجيل الخروج</span>
+            </button>
+          </div>
         </div>
 
         {/* Admin Tabs */}

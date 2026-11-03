@@ -232,6 +232,16 @@ export const CustomerScreen: React.FC = () => {
               <Users className="w-3.5 h-3.5" />
               <span>سجل المستخدمين بالداتابيس ({usersList.length})</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen('admin')}
+              className="bg-purple-900/40 hover:bg-purple-900/60 text-white px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition border border-white/20 cursor-pointer shadow-sm"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>لوحة الأدمن 🛡️</span>
+            </button>
+
             <button
               type="button"
               onClick={() => {
