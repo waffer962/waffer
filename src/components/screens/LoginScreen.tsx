@@ -43,7 +43,20 @@ export const LoginScreen: React.FC = () => {
       return;
     }
     setErrorMessage('');
-    loginWithEmail(email, password);
+    const res = loginWithEmail(email, password);
+    if (!res.success && res.error) {
+      setErrorMessage(res.error);
+    }
+  };
+
+  const handleQuickLogin = (quickEmail: string, quickPass: string) => {
+    setEmail(quickEmail);
+    setPassword(quickPass);
+    setErrorMessage('');
+    const res = loginWithEmail(quickEmail, quickPass);
+    if (!res.success && res.error) {
+      setErrorMessage(res.error);
+    }
   };
 
   const handleGoogleSubmit = (e: React.FormEvent) => {
@@ -191,6 +204,51 @@ export const LoginScreen: React.FC = () => {
               تسجيل الدخول
             </button>
           </form>
+
+          {/* Official Quick Credentials Card */}
+          <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black text-slate-700 flex items-center gap-1.5">
+                <span>🔐</span>
+                <span>حسابات الإدارة والتشغيل:</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">اضغط للدخول المباشر</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {/* Admin Credential */}
+              <button
+                type="button"
+                onClick={() => handleQuickLogin('admin@waffer.jo', 'admin123')}
+                className="p-2.5 bg-white hover:bg-amber-50 text-right rounded-xl border border-slate-200 hover:border-amber-300 transition text-xs shadow-2xs group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-black text-slate-900 group-hover:text-amber-800 text-[11px] flex items-center gap-1">
+                    <span>🛡️</span> المشرف (أدمن)
+                  </span>
+                  <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-bold">تعديل ✏️</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-mono truncate">admin@waffer.jo</p>
+                <p className="text-[9px] text-slate-400 mt-0.5">الرمز: <span className="font-mono font-bold text-slate-600">admin123</span></p>
+              </button>
+
+              {/* Staff Credential */}
+              <button
+                type="button"
+                onClick={() => handleQuickLogin('staff@waffer.jo', 'staff123')}
+                className="p-2.5 bg-white hover:bg-sky-50 text-right rounded-xl border border-slate-200 hover:border-sky-300 transition text-xs shadow-2xs group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-black text-slate-900 group-hover:text-sky-800 text-[11px] flex items-center gap-1">
+                    <span>🎧</span> موظف الشكاوى
+                  </span>
+                  <span className="text-[9px] bg-sky-100 text-sky-800 px-1 py-0.5 rounded font-bold">طلبات 📋</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-mono truncate">staff@waffer.jo</p>
+                <p className="text-[9px] text-slate-400 mt-0.5">الرمز: <span className="font-mono font-bold text-slate-600">staff123</span></p>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* 3. Guest Mode */}

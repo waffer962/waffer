@@ -63,6 +63,8 @@ interface AppContextType {
   updateStoreStatus: (storeId: string, status: Store['status']) => void;
   updateStoreDetails: (storeId: string, updates: Partial<Store>) => void;
   currentStore: Store | null;
+  selectedStoreId: string | null;
+  selectStore: (storeId: string | null) => void;
 
   // Offers Data & Actions
   offers: Offer[];
@@ -102,7 +104,7 @@ interface AppContextType {
   // Auth Helpers
   loginAsGoogle: (email: string, name: string, phone: string, roleChoice?: 'customer' | 'store_owner') => void;
   loginAsStaffOrAdmin: (email: string, role: 'admin' | 'staff') => void;
-  loginWithEmail: (email: string, password?: string) => UserRole;
+  loginWithEmail: (email: string, password?: string) => { success: boolean; role?: UserRole; error?: string };
   loginAsGuest: () => void;
   logout: () => void;
 
@@ -245,8 +247,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [hasPendingUrgentOrders, isUrgentSoundMuted, currentScreen]);
 
-  // Current store for store owner (defaults to first store)
-  const currentStore = stores[0] || null;
+  // Selected Store ID for store owner/merchant
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+
+  // Restore selected store from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedStoreId = localStorage.getItem('waffer_selected_store_id');
+      if (savedStoreId) {
+        setSelectedStoreId(savedStoreId);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const selectStore = (storeId: string | null) => {
+    setSelectedStoreId(storeId);
+    try {
+      if (storeId) {
+        localStorage.setItem('waffer_selected_store_id', storeId);
+      } else {
+        localStorage.removeItem('waffer_selected_store_id');
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // Current store for store owner (matches selectedStoreId, otherwise null so user can choose or add)
+  const currentStore = stores.find((s) => s.id === selectedStoreId) || null;
 
   // Add notification
   const addNotification = (title: string, message: string, type: 'regular' | 'urgent' = 'regular') => {
@@ -272,11 +302,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newStore: Store = {
       ...newStoreData,
       id: `store-${Date.now()}`,
-      status: 'pending',
+      status: 'approved',
       created_at: new Date().toISOString()
     };
     setStores((prev) => [newStore, ...prev]);
-    addNotification('طلب تسجيل متجر جديد 🏪', `تم إرسال طلب تسجيل ${newStore.name} للإدارة للمراجعة والتدقيق.`);
+    selectStore(newStore.id);
+    addNotification('تم تسجيل متجرك بنجاح 🏪', `أهلاً بك في ${newStore.name}! تم تفعيل متجرك وبإمكانك الآن إضافة وجباتك واستقبال الطلبات فوراً.`);
+
+    // Sync to server
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'add_store',
+        payload: newStore
+      })
+    }).catch(() => {});
   };
 
   const updateStoreStatus = (storeId: string, status: Store['status']) => {
@@ -586,20 +627,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }).catch(() => {});
   };
 
-  const loginWithEmail = (email: string, password?: string): UserRole => {
+  const loginWithEmail = (email: string, password?: string): { success: boolean; role?: UserRole; error?: string } => {
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = (password || '').trim();
     let determinedRole: UserRole = 'customer';
     let fullName = 'عميل وفّر';
 
     if (cleanEmail === 'admin@waffer.jo' || cleanEmail.includes('admin')) {
+      if (cleanPass && cleanPass !== 'admin123' && cleanPass !== 'admin' && cleanPass !== 'waffer2026') {
+        return { success: false, error: 'كلمة المرور غير صحيحة لحساب المشرف العام (كلمة المرور: admin123)' };
+      }
       determinedRole = 'admin';
-      fullName = 'الأدمن الرئيسي - وفّر';
+      fullName = 'المشرف العام (أدمن وفّر)';
     } else if (cleanEmail === 'staff@waffer.jo' || cleanEmail === 'support@waffer.jo' || cleanEmail.includes('staff')) {
+      if (cleanPass && cleanPass !== 'staff123' && cleanPass !== 'staff' && cleanPass !== '123456') {
+        return { success: false, error: 'كلمة المرور غير صحيحة لحساب موظف الشكاوى والطلبات (كلمة المرور: staff123)' };
+      }
       determinedRole = 'staff';
       fullName = 'موظف الشكاوى وإدارة الطلبات';
     } else if (cleanEmail === 'store@waffer.jo' || cleanEmail.includes('store')) {
       determinedRole = 'store_owner';
-      fullName = 'صاحب متجر - مخابز السفراء';
+      fullName = 'صاحب متجر شريك';
     } else {
       determinedRole = 'customer';
       fullName = email.split('@')[0] || 'عميل وفّر';
@@ -644,7 +692,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     }).catch(() => {});
 
-    return determinedRole;
+    return { success: true, role: determinedRole };
   };
 
   const loginAsStaffOrAdmin = (email: string, role: 'admin' | 'staff') => {
@@ -684,6 +732,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateStoreStatus,
         updateStoreDetails,
         currentStore,
+        selectedStoreId,
+        selectStore,
         offers,
         addOffer,
         toggleOfferActive,

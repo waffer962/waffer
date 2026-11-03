@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '@/lib/store/app-context';
 import { Waffer3DLogo } from '@/components/ui/Waffer3DLogo';
 import { ArrowLeft } from 'lucide-react';
 
 export const SplashScreen: React.FC = () => {
   const { setCurrentScreen, currentUser, currentUserRole } = useApp();
-  const [progress, setProgress] = useState(0);
 
   // Transition smoothly to user's saved screen or login
   const proceedToNextScreen = () => {
@@ -38,20 +37,13 @@ export const SplashScreen: React.FC = () => {
     setCurrentScreen(targetScreen);
   };
 
-  // Smooth, relaxed ~2.5s intro duration
+  // Gentle, calm intro transition (approx 2.2 seconds) with no upload progress bar or numbers
   useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          setTimeout(proceedToNextScreen, 200);
-          return 100;
-        }
-        return prev + 2; // Increments by 2 every 50ms => ~2.5s
-      });
-    }, 50);
+    const timer = setTimeout(() => {
+      proceedToNextScreen();
+    }, 2200);
 
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [currentUser, currentUserRole]);
 
   const handleSkip = () => {
@@ -61,7 +53,7 @@ export const SplashScreen: React.FC = () => {
   return (
     <div
       onClick={handleSkip}
-      className="flex-1 w-full flex flex-col items-center justify-between min-h-screen p-6 sm:p-10 bg-gradient-to-b from-white via-slate-50 to-emerald-50/20 text-slate-900 relative overflow-hidden select-none cursor-pointer"
+      className="flex-1 w-full flex flex-col items-center justify-between min-h-screen p-6 sm:p-10 bg-gradient-to-b from-white via-slate-50 to-emerald-50/30 text-slate-900 relative overflow-hidden select-none cursor-pointer"
     >
       {/* Top minimal skip button */}
       <div className="w-full max-w-sm flex justify-end items-center z-10 pt-2">
@@ -71,21 +63,22 @@ export const SplashScreen: React.FC = () => {
             e.stopPropagation();
             handleSkip();
           }}
-          className="text-xs font-bold text-slate-400 hover:text-emerald-700 bg-white hover:bg-emerald-50 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-2xs flex items-center gap-1 transition"
+          className="text-xs font-bold text-slate-400 hover:text-emerald-700 bg-white hover:bg-emerald-50 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-2xs flex items-center gap-1 transition cursor-pointer"
         >
           <span>تخطي</span>
           <ArrowLeft className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Center: Iconic Luxury Single-Mark 'و' & Minimal Branding */}
+      {/* Center: Official Logo with 3D gentle motion & Branding */}
       <div className="flex flex-col items-center text-center z-10 my-auto space-y-6">
-        {/* 3D Iconic Single-Mark 'و' (Instant Recognition from Afar) */}
+        {/* Subtle glowing ambient pulse */}
         <div className="relative">
-          <Waffer3DLogo size={140} enableTilt={true} />
+          <div className="absolute inset-0 rounded-full bg-emerald-400/15 blur-2xl animate-pulse -z-10 scale-125" />
+          <Waffer3DLogo size={145} enableTilt={true} />
         </div>
 
-        {/* Minimal Luxury Typography */}
+        {/* Brand Typography */}
         <div className="space-y-2">
           <div className="flex items-center justify-center gap-2">
             <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
@@ -102,16 +95,20 @@ export const SplashScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Minimal Progress Bar */}
-      <div className="w-full max-w-xs z-10 flex flex-col items-center gap-2 pb-6">
-        <div className="w-full bg-slate-200/80 h-1.5 rounded-full overflow-hidden">
-          <div
-            className="bg-emerald-600 h-full rounded-full transition-all duration-75 ease-out"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Bottom Gentle Calm Motion (No progress bar line, no numeric percentages) */}
+      <div className="w-full max-w-xs z-10 flex flex-col items-center justify-center gap-3 pb-8">
+        {/* Three gentle pulsing / dancing dots */}
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce [animation-delay:-0.3s]" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:-0.15s]" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" />
         </div>
-        <span className="text-[10px] text-slate-400 font-mono">{progress}%</span>
+
+        <p className="text-[11px] text-slate-400 font-medium tracking-wide">
+          جاري فتح المنصة...
+        </p>
       </div>
     </div>
   );
 };
+
