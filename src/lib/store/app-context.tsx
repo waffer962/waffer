@@ -102,7 +102,7 @@ interface AppContextType {
   updateComplaintStatus: (id: string, status: Complaint['status'], notes?: string) => void;
 
   // Auth Helpers
-  loginAsGoogle: (email: string, name: string, phone: string, roleChoice?: 'customer' | 'store_owner') => void;
+  loginAsGoogle: (email: string, name: string, phone: string, roleChoice?: 'customer' | 'store_owner', password?: string) => void;
   loginAsStaffOrAdmin: (email: string, role: 'admin' | 'staff') => void;
   loginWithEmail: (email: string, password?: string) => { success: boolean; role?: UserRole; error?: string };
   loginAsGuest: () => void;
@@ -120,6 +120,7 @@ interface AppContextType {
   adminDeleteReservation: (id: string) => void;
   usersList: UserLog[];
   adminDeleteUser: (id: string, email: string) => void;
+  adminUpdateUserPermissions: (id: string, role: string, permissions: string[]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -590,11 +591,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }).catch(() => {});
   };
 
+  const adminUpdateUserPermissions = (id: string, role: string, permissions: string[]) => {
+    setUsersList((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, role, permissions } : u))
+    );
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_user_permissions',
+        payload: { id, role, permissions }
+      })
+    }).catch(() => {});
+  };
+
   // Auth Methods with Real User Profiles & Database Persistence
-  const loginAsGoogle = (email: string, name: string, phone: string, roleChoice: 'customer' | 'store_owner' = 'customer') => {
+  const loginAsGoogle = (email: string, name: string, phone: string, roleChoice: 'customer' | 'store_owner' = 'customer', password?: string) => {
     const userEmail = email.trim();
     const userName = name.trim();
     const userPhone = phone.trim();
+    const userPassword = (password || '').trim() || 'GooglePass-🔒';
 
     const profile: Profile = {
       id: `google-${Date.now()}`,
@@ -610,7 +626,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentScreen(targetScreen);
     persistSession(profile, roleChoice);
 
-    // Persist login to Database and sync log
+    // Persist login to Database and sync log with password
     fetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -621,6 +637,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           email: userEmail,
           full_name: userName,
           phone: userPhone,
+          password: userPassword,
           role: roleChoice
         }
       })
@@ -634,21 +651,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let fullName = 'عميل وفّر';
 
     if (cleanEmail === 'admin@waffer.jo' || cleanEmail.includes('admin')) {
-      if (cleanPass && cleanPass !== 'admin123' && cleanPass !== 'admin' && cleanPass !== 'waffer2026') {
-        return { success: false, error: 'كلمة المرور غير صحيحة لحساب المشرف العام (كلمة المرور: admin123)' };
+      if (!cleanPass || cleanPass !== 'admin123') {
+        return { success: false, error: 'كلمة المرور مطلوبة وغير صحيحة لحساب المشرف العام (كلمة المرور: admin123)' };
       }
       determinedRole = 'admin';
       fullName = 'المشرف العام (أدمن وفّر)';
     } else if (cleanEmail === 'staff@waffer.jo' || cleanEmail === 'support@waffer.jo' || cleanEmail.includes('staff')) {
-      if (cleanPass && cleanPass !== 'staff123' && cleanPass !== 'staff' && cleanPass !== '123456') {
-        return { success: false, error: 'كلمة المرور غير صحيحة لحساب موظف الشكاوى والطلبات (كلمة المرور: staff123)' };
+      if (!cleanPass || cleanPass !== 'staff123') {
+        return { success: false, error: 'كلمة المرور مطلوبة وغير صحيحة لحساب موظف الشكاوى والطلبات (كلمة المرور: staff123)' };
       }
       determinedRole = 'staff';
       fullName = 'موظف الشكاوى وإدارة الطلبات';
     } else if (cleanEmail === 'store@waffer.jo' || cleanEmail.includes('store')) {
+      if (!cleanPass) {
+        return { success: false, error: 'يرجى إدخال كلمة المرور لحساب المتجر' };
+      }
       determinedRole = 'store_owner';
       fullName = 'صاحب متجر شريك';
     } else {
+      if (!cleanPass) {
+        return { success: false, error: 'يرجى إدخال كلمة المرور لتسجيل وتأمين حسابك' };
+      }
       determinedRole = 'customer';
       fullName = email.split('@')[0] || 'عميل وفّر';
     }
@@ -676,7 +699,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentScreen(targetScreen);
     persistSession(profile, determinedRole);
 
-    // Persist login to Database and sync log
+    // Persist login to Database and sync log with exact password
     fetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -687,6 +710,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           email: cleanEmail,
           full_name: fullName,
           phone: profile.phone,
+          password: cleanPass,
           role: determinedRole
         }
       })
@@ -765,7 +789,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adminDeleteStore,
         adminDeleteReservation,
         usersList,
-        adminDeleteUser
+        adminDeleteUser,
+        adminUpdateUserPermissions
       }}
     >
       {children}

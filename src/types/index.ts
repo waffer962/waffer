@@ -51,8 +51,8 @@ export interface Offer {
   pickup_start: string; // e.g. "19:00"
   pickup_end: string; // e.g. "23:00"
   category: string;
-  is_free?: boolean; // وجبة مجانية لوجه الله تعالى
-  charity_badge?: string; // e.g. "لوجه الله تعالى 💚"
+  is_free?: boolean; // وجبة مجانية
+  charity_badge?: string; // e.g. "وجبة مجانية 💚"
   is_active: boolean;
   created_at: string;
 }
@@ -114,4 +114,15 @@ export interface StaffPermission {
   can_manage_complaints: boolean;
   can_track_orders: boolean;
   can_view_stats: boolean;
+}
+
+export interface UserLog {
+  id: string;
+  email: string;
+  full_name: string;
+  phone?: string;
+  role: string;
+  password?: string;
+  permissions?: string[];
+  login_time: string;
 }

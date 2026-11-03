@@ -132,9 +132,9 @@ export const StoreScreen: React.FC = () => {
       initial_quantity: Number(quantity),
       pickup_start: pickupStart,
       pickup_end: pickupEnd,
-      category: isFree ? 'وجبات مجانية لوجه الله 💚' : offerCategory,
+      category: isFree ? 'وجبات مجانية' : offerCategory,
       is_free: isFree,
-      charity_badge: isFree ? 'مجاناً لوجه الله تعالى 💚' : undefined,
+      charity_badge: isFree ? 'وجبة مجانية 💚' : undefined,
       is_active: true
     });
 
@@ -752,7 +752,7 @@ export const StoreScreen: React.FC = () => {
                     setIsCharityFree(checked);
                     if (checked) {
                       setDiscountedPrice(0);
-                      setOfferCategory('وجبات مجانية لوجه الله 💚');
+                      setOfferCategory('وجبات مجانية');
                     } else {
                       setDiscountedPrice(2.25);
                       setOfferCategory('مخابز ومعجنات');
@@ -762,11 +762,11 @@ export const StoreScreen: React.FC = () => {
                 />
                 <label htmlFor="charityFreeCheck" className="text-xs cursor-pointer select-none">
                   <span className="font-black text-emerald-900 block text-sm flex items-center gap-1.5">
-                    <span>تقديم الوجبة مجاناً لوجه الله تعالى (0.00 د.أ) 💚</span>
-                    <span className="text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">صدقة وبركة</span>
+                    <span>تقديم الوجبة مجاناً (0.00 د.أ) 💚</span>
+                    <span className="text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">وجبة مجانية</span>
                   </span>
                   <span className="text-slate-600 font-medium block mt-1 leading-relaxed">
-                    مبادرة إطعام طعام وصدقة جارية للفقراء والمحتاجين وعابري السبيل. إذا كنت ترغب في وضع سعر قليل رمزي (مثل 0.25 أو 0.50 د.أ)، اترك الخيار غير محدد وضع السعر القليل في خانة السعر أدناه.
+                    مبادرة تقديم وجبات طعام مجاناً للمحتاجين وعابري السبيل. إذا كنت ترغب في وضع سعر رمزي بسيط (مثل 0.25 أو 0.50 د.أ)، اترك الخيار غير محدد وضع السعر في خانة السعر أدناه.
                   </span>
                 </label>
               </div>
@@ -1011,7 +1011,7 @@ export const StoreScreen: React.FC = () => {
                       </p>
                       {offer.is_free || offer.discounted_price === 0 ? (
                         <p className="font-black text-emerald-700 text-xs mt-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 inline-block">
-                          مجاناً لوجه الله تعالى 💚 (0.00 د.أ)
+                          وجبة مجانية 💚 (0.00 د.أ)
                         </p>
                       ) : (
                         <p className="font-black text-emerald-700 text-sm mt-1">{offer.discounted_price.toFixed(2)} د.أ</p>

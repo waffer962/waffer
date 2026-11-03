@@ -26,20 +26,20 @@ export const LoginScreen: React.FC = () => {
   // Google Sign-In Modal State
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [googleEmail, setGoogleEmail] = useState('');
+  const [googlePassword, setGooglePassword] = useState('');
   const [googleName, setGoogleName] = useState('');
   const [googlePhone, setGooglePhone] = useState('');
   const [googleRole, setGoogleRole] = useState<'customer' | 'store_owner'>('customer');
   const [googleError, setGoogleError] = useState('');
 
-  // Discreet Admin Passkey Entry
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
-  const [adminKey, setAdminKey] = useState('');
-  const [adminError, setAdminError] = useState('');
-
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
       setErrorMessage('يرجى إدخال البريد الإلكتروني');
+      return;
+    }
+    if (!password) {
+      setErrorMessage('يرجى إدخال كلمة المرور');
       return;
     }
     setErrorMessage('');
@@ -49,20 +49,14 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (quickEmail: string, quickPass: string) => {
-    setEmail(quickEmail);
-    setPassword(quickPass);
-    setErrorMessage('');
-    const res = loginWithEmail(quickEmail, quickPass);
-    if (!res.success && res.error) {
-      setErrorMessage(res.error);
-    }
-  };
-
   const handleGoogleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!googleEmail || !googleEmail.includes('@')) {
       setGoogleError('يرجى إدخال بريد إلكتروني صحيح');
+      return;
+    }
+    if (!googlePassword.trim() || googlePassword.trim().length < 4) {
+      setGoogleError('كلمة المرور مطلوبة لحفظ وتأمين حسابك في الداتابيس (4 أحرف أو أرقام على الأقل)');
       return;
     }
     if (!googleName.trim() || googleName.trim().length < 2) {
@@ -75,23 +69,7 @@ export const LoginScreen: React.FC = () => {
     }
     setGoogleError('');
     setIsGoogleModalOpen(false);
-    loginAsGoogle(googleEmail, googleName, googlePhone, googleRole);
-  };
-
-  const handleAdminSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!adminKey.trim()) {
-      setAdminError('يرجى إدخال رمز مرور المشرف');
-      return;
-    }
-    // Accept standard master keys
-    if (adminKey === 'admin' || adminKey === 'admin123' || adminKey === 'waffer2026' || adminKey === '123456') {
-      setAdminError('');
-      setIsAdminModalOpen(false);
-      loginWithEmail('admin@waffer.jo');
-    } else {
-      setAdminError('رمز مرور المشرف غير صحيح');
-    }
+    loginAsGoogle(googleEmail, googleName, googlePhone, googleRole, googlePassword);
   };
 
   return (
@@ -205,49 +183,46 @@ export const LoginScreen: React.FC = () => {
             </button>
           </form>
 
-          {/* Official Quick Credentials Card */}
+          {/* Official Credentials Info Box (Non-bypass, requires typing email and password in the form above) */}
           <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-black text-slate-700 flex items-center gap-1.5">
                 <span>🔐</span>
-                <span>حسابات الإدارة والتشغيل:</span>
+                <span>بيانات الدخول الرسمية للإدارة والتشغيل:</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">اضغط للدخول المباشر</span>
+              <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-bold border border-amber-200">
+                إدخال يدوي إجباري 🔒
+              </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {/* Admin Credential */}
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin@waffer.jo', 'admin123')}
-                className="p-2.5 bg-white hover:bg-amber-50 text-right rounded-xl border border-slate-200 hover:border-amber-300 transition text-xs shadow-2xs group cursor-pointer"
-              >
+            <div className="grid grid-cols-2 gap-2 text-right">
+              {/* Admin Credential Info */}
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-xs shadow-2xs">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-black text-slate-900 group-hover:text-amber-800 text-[11px] flex items-center gap-1">
+                  <span className="font-black text-slate-900 text-[11px] flex items-center gap-1">
                     <span>🛡️</span> المشرف (أدمن)
                   </span>
                   <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-bold">تعديل ✏️</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-mono truncate">admin@waffer.jo</p>
-                <p className="text-[9px] text-slate-400 mt-0.5">الرمز: <span className="font-mono font-bold text-slate-600">admin123</span></p>
-              </button>
+                <p className="text-[10px] text-slate-600 font-mono select-all">admin@waffer.jo</p>
+                <p className="text-[9px] text-slate-500 mt-0.5">الرمز: <span className="font-mono font-bold text-amber-700 select-all">admin123</span></p>
+              </div>
 
-              {/* Staff Credential */}
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('staff@waffer.jo', 'staff123')}
-                className="p-2.5 bg-white hover:bg-sky-50 text-right rounded-xl border border-slate-200 hover:border-sky-300 transition text-xs shadow-2xs group cursor-pointer"
-              >
+              {/* Staff Credential Info */}
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-xs shadow-2xs">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-black text-slate-900 group-hover:text-sky-800 text-[11px] flex items-center gap-1">
+                  <span className="font-black text-slate-900 text-[11px] flex items-center gap-1">
                     <span>🎧</span> موظف الشكاوى
                   </span>
                   <span className="text-[9px] bg-sky-100 text-sky-800 px-1 py-0.5 rounded font-bold">طلبات 📋</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-mono truncate">staff@waffer.jo</p>
-                <p className="text-[9px] text-slate-400 mt-0.5">الرمز: <span className="font-mono font-bold text-slate-600">staff123</span></p>
-              </button>
+                <p className="text-[10px] text-slate-600 font-mono select-all">staff@waffer.jo</p>
+                <p className="text-[9px] text-slate-500 mt-0.5">الرمز: <span className="font-mono font-bold text-sky-700 select-all">staff123</span></p>
+              </div>
             </div>
+            <p className="text-[10px] text-slate-500 text-center font-medium leading-relaxed">
+              * للحفاظ على أمان الموقع، يرجى كتابة البريد وكلمة المرور الخاصة بك في خانات تسجيل الدخول أعلاه.
+            </p>
           </div>
         </div>
 
@@ -289,12 +264,12 @@ export const LoginScreen: React.FC = () => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                   />
                 </svg>
-                <h3 className="text-base font-black text-slate-900">تسجيل الدخول بحساب Google</h3>
+                <h3 className="text-base font-black text-slate-900">تسجيل الدخول وحفظ الحساب</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsGoogleModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -310,13 +285,27 @@ export const LoginScreen: React.FC = () => {
             <form onSubmit={handleGoogleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  بريدك الإلكتروني في Google:
+                  بريدك الإلكتروني:
                 </label>
                 <input
                   type="email"
                   value={googleEmail}
                   onChange={(e) => setGoogleEmail(e.target.value)}
                   placeholder="example@gmail.com"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  كلمة المرور للحساب <span className="text-red-600 font-bold">* (إجباري لحفظ وتأمين الدخول)</span>:
+                </label>
+                <input
+                  type="password"
+                  value={googlePassword}
+                  onChange={(e) => setGooglePassword(e.target.value)}
+                  placeholder="أدخل كلمة مرور لتأمين حسابك..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition"
                   required
                 />
@@ -396,83 +385,12 @@ export const LoginScreen: React.FC = () => {
                 type="submit"
                 className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.98] cursor-pointer"
               >
-                متابعة وحفظ الحساب في الداتابيس
+                متابعة وحفظ الحساب وكلمة المرور في الداتابيس 🔒
               </button>
             </form>
           </div>
         </div>
       )}
-
-      {/* ===================== ADMIN DIRECT ACCESS MODAL ===================== */}
-      {isAdminModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">
-                  ✏️
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900">دخول المشرف العام (الأدمن)</h3>
-                  <span className="text-[10px] text-slate-500">لتفعيل قلم التعديل المباشر في الموقع</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAdminModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {adminError && (
-              <div className="p-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold">
-                {adminError}
-              </div>
-            )}
-
-            <form onSubmit={handleAdminSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  رمز مرور المشرف:
-                </label>
-                <input
-                  type="password"
-                  value={adminKey}
-                  onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="أدخل الرمز السري للمشرف..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition"
-                  autoFocus
-                />
-              </div>
-
-              <p className="text-[10px] text-slate-500 leading-relaxed">
-                * عند الدخول ستتصفح الموقع كالمعتاد مع ظهور أقلام التعديل (✏️) على كل النصوص والصور والمتاجر والطلبات مباشرة.
-              </p>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-500/20 transition active:scale-[0.98] cursor-pointer"
-              >
-                تفعيل وضع التعديل المباشر بالقلم ✏️
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Discreet Admin Trigger at bottom */}
-      <div className="fixed bottom-3 right-3 opacity-40 hover:opacity-100 transition z-20">
-        <button
-          type="button"
-          onClick={() => setIsAdminModalOpen(true)}
-          className="text-[10px] font-bold text-slate-500 hover:text-slate-800 bg-white/80 hover:bg-white px-2.5 py-1 rounded-full border border-slate-200 shadow-2xs flex items-center gap-1 cursor-pointer"
-        >
-          <span>إدارة</span>
-          <span>✏️</span>
-        </button>
-      </div>
     </div>
   );
 };

@@ -127,7 +127,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ reservation, onClose
             <div className="bg-slate-950 print:bg-slate-100 px-3 py-2.5 flex justify-between items-center border-t border-slate-800 print:border-slate-300">
               <span className="font-bold text-slate-300 print:text-slate-700">طريقة الدفع:</span>
               <span className="font-bold text-emerald-400 print:text-emerald-800">
-                {reservation.total_price === 0 ? 'مجاناً لوجه الله تعالى 💚' : 'نقداً عند الاستلام بالمتجر 💵'}
+                {reservation.total_price === 0 ? 'وجبة مجانية 💚 (0.00 د.أ)' : 'نقداً عند الاستلام بالمتجر 💵'}
               </span>
             </div>
           </div>

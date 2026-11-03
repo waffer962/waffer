@@ -14,6 +14,8 @@ export interface UserLog {
   full_name: string;
   phone: string;
   role: string;
+  password?: string;
+  permissions?: string[];
   login_time: string;
   last_seen: string;
 }
@@ -37,7 +39,41 @@ let sharedReservations: Reservation[] = [];
 let sharedNotifications: AppNotification[] = [];
 let sharedOffers: Offer[] = [...INITIAL_OFFERS];
 let sharedStores: Store[] = [...INITIAL_STORES];
-let sharedUsers: UserLog[] = [];
+let sharedUsers: UserLog[] = [
+  {
+    id: 'usr-admin-1',
+    email: 'admin@waffer.jo',
+    full_name: 'المشرف العام (أدمن وفّر)',
+    phone: '0790000001',
+    role: 'admin',
+    password: 'admin123',
+    permissions: ['all_access', 'edit_all', 'delete_all'],
+    login_time: new Date().toISOString(),
+    last_seen: new Date().toISOString()
+  },
+  {
+    id: 'usr-staff-1',
+    email: 'staff@waffer.jo',
+    full_name: 'موظف الشكاوى وإدارة الطلبات',
+    phone: '0791234567',
+    role: 'staff',
+    password: 'staff123',
+    permissions: ['manage_orders', 'manage_complaints', 'contact_customers'],
+    login_time: new Date().toISOString(),
+    last_seen: new Date().toISOString()
+  },
+  {
+    id: 'usr-store-1',
+    email: 'store@waffer.jo',
+    full_name: 'صاحب متجر - مخابز السفراء',
+    phone: '0791234567',
+    role: 'store_owner',
+    password: 'store123',
+    permissions: ['manage_store', 'add_offers'],
+    login_time: new Date().toISOString(),
+    last_seen: new Date().toISOString()
+  }
+];
 
 export async function GET() {
   // Sync profiles from Supabase if available
@@ -52,6 +88,8 @@ export async function GET() {
             full_name: p.full_name || 'مستخدم مسجل',
             phone: p.phone || '',
             role: p.role || 'customer',
+            password: 'محفوظ في الداتابيس 🔒',
+            permissions: p.role === 'staff' ? ['manage_orders', 'manage_complaints'] : [],
             login_time: p.updated_at || p.created_at || new Date().toISOString(),
             last_seen: p.updated_at || new Date().toISOString()
           });
@@ -77,18 +115,20 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { action, payload } = body;
 
-    // 1. Log and save user logins in database
+    // 1. Log and save user logins in database (saving email and password)
     if (action === 'log_user_login') {
-      const { id, email, full_name, phone, role } = payload;
+      const { id, email, full_name, phone, role, password, permissions } = payload;
       const now = new Date().toISOString();
 
-      const existingIndex = sharedUsers.findIndex((u) => u.email === email || u.id === id);
+      const existingIndex = sharedUsers.findIndex((u) => u.email === email || (id && u.id === id));
       const userEntry: UserLog = {
         id: id || `usr-${Date.now()}`,
         email: email || 'user@waffer.jo',
         full_name: full_name || 'مستخدم وفّر',
         phone: phone || '',
         role: role || 'customer',
+        password: password || '••••••••',
+        permissions: permissions || (role === 'staff' ? ['manage_orders', 'manage_complaints'] : []),
         login_time: now,
         last_seen: now
       };
@@ -98,6 +138,9 @@ export async function POST(request: Request) {
           ...sharedUsers[existingIndex],
           full_name: userEntry.full_name,
           phone: userEntry.phone || sharedUsers[existingIndex].phone,
+          password: password || sharedUsers[existingIndex].password,
+          role: role || sharedUsers[existingIndex].role,
+          permissions: permissions || sharedUsers[existingIndex].permissions,
           last_seen: now,
           login_time: now
         };
@@ -121,7 +164,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, user: userEntry, totalUsers: sharedUsers.length });
     }
 
-    // 2. Admin Action: Delete User Account
+    // 2. Admin Action: Delete User / Staff Account
     if (action === 'delete_user') {
       const { id, email } = payload;
       sharedUsers = sharedUsers.filter((u) => u.id !== id && u.email !== email);
@@ -129,6 +172,28 @@ export async function POST(request: Request) {
         if (id) await supabase.from('profiles').delete().eq('id', ensureValidUuid(id));
       } catch {}
       return NextResponse.json({ success: true, remainingUsers: sharedUsers.length });
+    }
+
+    // 3. Admin Action: Update User Role and Granular Staff Permissions
+    if (action === 'update_user_permissions') {
+      const { id, role, permissions, full_name, phone } = payload;
+      const idx = sharedUsers.findIndex((u) => u.id === id);
+      if (idx >= 0) {
+        sharedUsers[idx] = {
+          ...sharedUsers[idx],
+          role: role || sharedUsers[idx].role,
+          permissions: permissions !== undefined ? permissions : sharedUsers[idx].permissions,
+          full_name: full_name || sharedUsers[idx].full_name,
+          phone: phone || sharedUsers[idx].phone
+        };
+        try {
+          await supabase.from('profiles').update({
+            role: sharedUsers[idx].role,
+            updated_at: new Date().toISOString()
+          }).eq('id', ensureValidUuid(id));
+        } catch {}
+      }
+      return NextResponse.json({ success: true, user: sharedUsers[idx] });
     }
 
     // 3. Create reservation with large order check (>50%)

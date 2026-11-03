@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store/app-context';
-import { Offer, Reservation } from '@/types';
+import { Offer, Reservation, UserLog } from '@/types';
 import { JORDAN_GOVERNORATES, FOOD_CATEGORIES } from '@/lib/mock-data';
 import { InvoiceModal } from '@/components/InvoiceModal';
 import {
@@ -35,7 +35,9 @@ import {
   Database,
   Settings,
   Save,
-  Plus
+  Plus,
+  Check,
+  Key
 } from 'lucide-react';
 import { WafferLogo } from '@/components/ui/WafferLogo';
 
@@ -57,7 +59,8 @@ export const CustomerScreen: React.FC = () => {
     adminDeleteStore,
     adminDeleteReservation,
     usersList,
-    adminDeleteUser
+    adminDeleteUser,
+    adminUpdateUserPermissions
   } = useApp();
 
   // Navigation tab
@@ -83,6 +86,11 @@ export const CustomerScreen: React.FC = () => {
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [editOfferForm, setEditOfferForm] = useState<Partial<Offer>>({});
   const [isAdminUsersDrawerOpen, setIsAdminUsersDrawerOpen] = useState(false);
+
+  // Admin Employee & User Permissions Management State
+  const [editingUser, setEditingUser] = useState<UserLog | null>(null);
+  const [editRole, setEditRole] = useState<string>('staff');
+  const [editPermissions, setEditPermissions] = useState<string[]>([]);
 
   // Sync with current user profile
   React.useEffect(() => {
@@ -207,7 +215,7 @@ export const CustomerScreen: React.FC = () => {
       {isAdmin && (
         <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-600 text-white px-4 py-2.5 text-xs font-bold flex flex-wrap items-center justify-between gap-3 shadow-md sticky top-0 z-50">
           <div className="flex items-center gap-2">
-            <span className="text-base animate-bounce">✏️</span>
+            <span className="text-base">✏️</span>
             <div>
               <span className="font-black block text-sm">وضع المشرف العام (التعديل المباشر بالقلم ✏️ مفعّل)</span>
               <span className="text-[11px] text-amber-100 font-medium">
@@ -562,7 +570,7 @@ export const CustomerScreen: React.FC = () => {
                             </button>
                           ) : isFreeOffer ? (
                             <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs shadow-md border border-white/20 flex items-center gap-1">
-                              <span>مجاناً لوجه الله 💚</span>
+                              <span>وجبة مجانية 💚</span>
                             </div>
                           ) : (
                             <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-amber-500 text-white font-black text-xs shadow-md">
@@ -644,7 +652,7 @@ export const CustomerScreen: React.FC = () => {
                                     </span>
                                   </div>
                                   <span className="text-[10px] text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md font-bold block mt-0.5">
-                                    صدقة وبركة لوجه الله 🌱
+                                    وجبة مجانية 💚
                                   </span>
                                 </div>
                               ) : (
@@ -867,7 +875,7 @@ export const CustomerScreen: React.FC = () => {
                           <span>طريقة الدفع:</span>
                           <span className="font-bold text-emerald-700">
                             {res.total_price === 0
-                              ? 'مجاناً لوجه الله تعالى 💚'
+                              ? 'وجبة مجانية 💚'
                               : `${res.total_price.toFixed(2)} د.أ (نقدًا عند الاستلام 💵)`}
                           </span>
                         </div>
@@ -1021,7 +1029,7 @@ export const CustomerScreen: React.FC = () => {
                     المبلغ الإجمالي:{' '}
                     <span className="font-black text-emerald-700 text-base">
                       {bookingSuccess.total_price === 0
-                        ? '0.00 د.أ (مجاناً لوجه الله تعالى 💚)'
+                        ? '0.00 د.أ (وجبة مجانية 💚)'
                         : `${bookingSuccess.total_price.toFixed(2)} د.أ (نقدًا عند الاستلام)`}
                     </span>
                   </p>
@@ -1063,7 +1071,7 @@ export const CustomerScreen: React.FC = () => {
                     />
                     {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
                       <div className="absolute top-3 right-3 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs rounded-xl shadow-md border border-white/20 flex items-center gap-1.5">
-                        <span>مجاناً لوجه الله تعالى 💚</span>
+                        <span>وجبة مجانية 💚</span>
                       </div>
                     ) : (
                       <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white font-black text-xs rounded-xl shadow-md">
@@ -1110,7 +1118,7 @@ export const CustomerScreen: React.FC = () => {
                       {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
                         <div>
                           <span className="text-2xl font-black text-emerald-700">مجاناً (0.00 د.أ)</span>
-                          <span className="text-[11px] text-emerald-700 block font-bold mt-0.5">وجبة صدقة وبركة لوجه الله تعالى 💚</span>
+                          <span className="text-[11px] text-emerald-700 block font-bold mt-0.5">وجبة مجانية 💚</span>
                         </div>
                       ) : (
                         <div className="flex items-baseline gap-2">
@@ -1165,7 +1173,7 @@ export const CustomerScreen: React.FC = () => {
                           <span className="text-slate-600 text-xs block font-medium">المجموع الإجمالي:</span>
                           <span className="text-base font-black text-emerald-700">
                             {selectedOffer.is_free || selectedOffer.discounted_price === 0 ? (
-                              <span>0.00 دينار (مجاناً لوجه الله تعالى 💚)</span>
+                              <span>0.00 دينار (وجبة مجانية 💚)</span>
                             ) : (
                               <span>{(reservationQty * selectedOffer.discounted_price).toFixed(2)} دينار أردني</span>
                             )}
@@ -1228,7 +1236,7 @@ export const CustomerScreen: React.FC = () => {
                         }`}
                       >
                         {selectedOffer.is_free || selectedOffer.discounted_price === 0
-                          ? 'تأكيد حجز الوجبة المجانية لوجه الله تعالى 💚'
+                          ? 'تأكيد حجز الوجبة المجانية 💚'
                           : 'إرسال طلب الحجز إلى المتجر 🛒'}
                       </button>
                       <p className="text-[11px] text-center text-slate-600 mt-2 font-medium">
@@ -1305,8 +1313,8 @@ export const CustomerScreen: React.FC = () => {
               {/* Charity free meal option */}
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-emerald-900 block">عرض مجاني لوجه الله تعالى (0.00 د.أ) 💚:</span>
-                  <span className="text-[10px] text-emerald-700">مبادرة صدقة جارية للفقراء والمحتاجين</span>
+                  <span className="text-xs font-bold text-emerald-900 block">عرض وجبة مجانية (0.00 د.أ) 💚:</span>
+                  <span className="text-[10px] text-emerald-700">تقديم الوجبة مجاناً بالكامل</span>
                 </div>
                 <input
                   type="checkbox"
@@ -1317,8 +1325,8 @@ export const CustomerScreen: React.FC = () => {
                       ...prev,
                       discounted_price: checked ? 0 : 2.0,
                       is_free: checked,
-                      category: checked ? 'وجبات مجانية لوجه الله 💚' : (prev.category || 'وجبات ومطاعم'),
-                      charity_badge: checked ? 'مجاناً لوجه الله تعالى 💚' : undefined
+                      category: checked ? 'وجبات مجانية' : (prev.category || 'وجبات ومطاعم'),
+                      charity_badge: checked ? 'وجبة مجانية 💚' : undefined
                     }));
                   }}
                   className="w-4 h-4 text-emerald-600 rounded-md cursor-pointer"
@@ -1489,11 +1497,11 @@ export const CustomerScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Users List */}
+            {/* Users & Staff List */}
             <div className="space-y-3">
               <h4 className="font-bold text-xs text-slate-800 flex items-center justify-between">
-                <span>قائمة الحسابات المسجلة ({usersList.length}):</span>
-                <span className="text-[10px] text-slate-400 font-normal">يمكنك حذف أي حساب بالكامل</span>
+                <span>قائمة الحسابات والموظفين المسجلين ({usersList.length}):</span>
+                <span className="text-[10px] text-slate-500 font-medium">تعديل الصلاحيات • حذف الحساب • إظهار كلمات المرور</span>
               </h4>
 
               {usersList.length === 0 ? (
@@ -1501,53 +1509,110 @@ export const CustomerScreen: React.FC = () => {
                   لا توجد حسابات مسجلة بعد في السجل الحالي.
                 </div>
               ) : (
-                <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                   {usersList.map((usr) => (
                     <div
                       key={usr.id}
-                      className="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-3 shadow-2xs hover:border-slate-300 transition"
+                      className="p-3.5 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-slate-300 transition"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
                           {usr.full_name?.charAt(0) || 'م'}
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs text-slate-900 truncate">{usr.full_name}</span>
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-slate-100 text-slate-700 border border-slate-200">
-                              {usr.role === 'admin' ? 'مشرف 👑' : usr.role === 'store_owner' ? 'تاجر 🏪' : usr.role === 'staff' ? 'موظف 🛡️' : 'زبون 🛒'}
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-black text-xs text-slate-900 truncate">{usr.full_name}</span>
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-slate-100 text-slate-800 border border-slate-200">
+                              {usr.role === 'admin' ? 'مشرف عام 👑' : usr.role === 'store_owner' ? 'صاحب متجر 🏪' : usr.role === 'staff' ? 'موظف تشغيل 🛡️' : 'زبون 🛒'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-0.5">
-                            <span className="dir-ltr truncate">{usr.email}</span>
+
+                          <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-600">
+                            <span className="dir-ltr font-mono font-medium truncate">{usr.email}</span>
                             {usr.phone && (
                               <>
                                 <span>•</span>
-                                <span className="dir-ltr font-bold text-slate-700">{usr.phone}</span>
+                                <span className="dir-ltr font-bold text-slate-800">{usr.phone}</span>
                               </>
                             )}
                           </div>
-                          <span className="text-[9px] text-slate-400 block mt-0.5">
-                            آخر دخول: {new Date(usr.login_time).toLocaleString('ar-JO')}
+
+                          {/* Stored Password Badge for Admin visibility */}
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            <Key className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span className="text-[10px] text-slate-500 font-medium">كلمة المرور:</span>
+                            <span className="font-mono font-bold text-[11px] text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 select-all">
+                              {usr.password || '••••••••'}
+                            </span>
+                          </div>
+
+                          {/* Active Permissions Badges */}
+                          {Array.isArray(usr.permissions) && usr.permissions.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {usr.permissions.includes('manage_orders') && (
+                                <span className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">
+                                  إدارة الطلبات 📦
+                                </span>
+                              )}
+                              {usr.permissions.includes('manage_complaints') && (
+                                <span className="text-[9px] bg-sky-50 text-sky-800 border border-sky-200 px-1.5 py-0.5 rounded font-bold">
+                                  حل الشكاوى 🎧
+                                </span>
+                              )}
+                              {usr.permissions.includes('edit_offers_stores') && (
+                                <span className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
+                                  تعديل العروض ✏️
+                                </span>
+                              )}
+                              {usr.permissions.includes('contact_customers') && (
+                                <span className="text-[9px] bg-purple-50 text-purple-800 border border-purple-200 px-1.5 py-0.5 rounded font-bold">
+                                  التواصل بالهاتف 📞
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <span className="text-[9px] text-slate-400 block">
+                            آخر نشاط: {new Date(usr.login_time).toLocaleString('ar-JO')}
                           </span>
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteUserAccount(usr.id, usr.email, usr.full_name)}
-                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition cursor-pointer shrink-0"
-                        title="حذف هذا الحساب نهائياً من قاعدة البيانات"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {/* Admin Action Buttons */}
+                      <div className="flex items-center gap-2 self-end sm:self-center shrink-0 pt-2 sm:pt-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingUser(usr);
+                            setEditRole(usr.role || 'staff');
+                            setEditPermissions(usr.permissions || ['manage_orders', 'manage_complaints']);
+                          }}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 cursor-pointer"
+                          title="تعديل الصلاحيات والدور لهذا الحساب"
+                        >
+                          <Settings className="w-3.5 h-3.5 text-slate-500" />
+                          <span>الصلاحيات والدور</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteUserAccount(usr.id, usr.email, usr.full_name)}
+                          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition cursor-pointer border border-transparent hover:border-red-200"
+                          title="حذف هذا الموظف أو المستخدم نهائياً من قاعدة البيانات"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-100 text-left">
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">
+                بصفتك المشرف العام، لديك كامل الصلاحية لإضافة أو إلغاء أي دور أو موظف.
+              </span>
               <button
                 type="button"
                 onClick={() => setIsAdminUsersDrawerOpen(false)}
@@ -1555,6 +1620,159 @@ export const CustomerScreen: React.FC = () => {
               >
                 إغلاق
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== ADMIN EDIT USER PERMISSIONS MODAL ===================== */}
+      {editingUser && (
+        <div className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 text-right text-slate-900">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-base">
+                  ⚙️
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">
+                    تعديل صلاحيات ودور: {editingUser.full_name}
+                  </h3>
+                  <span className="text-[10px] text-slate-500 font-mono">{editingUser.email}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingUser(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-2">
+                تحديد دور الحساب في الموقع:
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'admin', label: 'مشرف عام 👑', desc: 'كامل الصلاحيات والتعديل بالقلم' },
+                  { id: 'staff', label: 'موظف تشغيل 🛡️', desc: 'متابعة الطلبات وحل الشكاوى' },
+                  { id: 'store_owner', label: 'صاحب متجر 🏪', desc: 'إدارة متجر وعروض خاصة' },
+                  { id: 'customer', label: 'زبون / عميل 🛒', desc: 'تصفح وحجز الوجبات' }
+                ].map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setEditRole(r.id)}
+                    className={`p-2.5 rounded-xl border text-right transition cursor-pointer flex flex-col justify-between ${
+                      editRole === r.id
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-950 font-bold shadow-xs'
+                        : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{r.label}</span>
+                      {editRole === r.id && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-normal mt-0.5">{r.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Granular Permissions Checklist */}
+            <div className="space-y-2 pt-2">
+              <label className="block text-xs font-bold text-slate-800">
+                الصلاحيات الممنوحة (تحديد دقيق للمهام):
+              </label>
+
+              {[
+                {
+                  key: 'manage_orders',
+                  label: 'إدارة ومتابعة وحل الطلبات 📦',
+                  desc: 'يمكنه الموافقة على الحجوزات أو رفضها ومتابعة تسليمها للعملاء.'
+                },
+                {
+                  key: 'manage_complaints',
+                  label: 'حل وإغلاق الشكاوى 🎧',
+                  desc: 'يمكنه مراجعة الشكاوى المفتوحة والرد عليها وتغيير حالتها إلى محلولة.'
+                },
+                {
+                  key: 'edit_offers_stores',
+                  label: 'مراجعة وتعديل الوجبات والمتاجر ✏️',
+                  desc: 'إمكانية مراجعة تفاصيل عروض المتاجر وتعديلها بالقلم المباشر.'
+                },
+                {
+                  key: 'contact_customers',
+                  label: 'التواصل المباشر مع العملاء 📞',
+                  desc: 'إظهار أرقام هواتف العملاء للاتصال والتنسيق للاستلام.'
+                }
+              ].map((perm) => {
+                const isChecked = editPermissions.includes(perm.key);
+                return (
+                  <label
+                    key={perm.key}
+                    className={`flex items-start gap-3 p-2.5 rounded-xl border transition cursor-pointer ${
+                      isChecked ? 'bg-emerald-50/60 border-emerald-300' : 'bg-slate-50 border-slate-200 hover:bg-white'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setEditPermissions((prev) => [...prev, perm.key]);
+                        } else {
+                          setEditPermissions((prev) => prev.filter((k) => k !== perm.key));
+                        }
+                      }}
+                      className="w-4 h-4 text-emerald-600 rounded-md mt-0.5 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-xs font-bold text-slate-900 block">{perm.label}</span>
+                      <span className="text-[10px] text-slate-500 leading-relaxed block">{perm.desc}</span>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  handleDeleteUserAccount(editingUser.id, editingUser.email, editingUser.full_name);
+                  setEditingUser(null);
+                }}
+                className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>إلغاء وحذف الحساب نهائياً</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    adminUpdateUserPermissions(editingUser.id, editRole, editPermissions);
+                    setEditingUser(null);
+                  }}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition cursor-pointer"
+                >
+                  حفظ الصلاحيات والدور ✅
+                </button>
+              </div>
             </div>
           </div>
         </div>
