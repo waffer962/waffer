@@ -6,16 +6,18 @@ import { Waffer3DLogo } from '@/components/ui/Waffer3DLogo';
 import { ArrowLeft } from 'lucide-react';
 
 export const SplashScreen: React.FC = () => {
-  const { setCurrentScreen, currentUser, currentUserRole } = useApp();
+  const { setCurrentScreen, currentUser, currentUserRole, isAuthInitialized, googleAuthUser } = useApp();
 
   const proceedToNextScreen = () => {
-    let targetScreen: 'customer' | 'store' | 'staff' | 'admin' | 'login' = 'login';
+    let targetScreen: 'customer' | 'store' | 'staff' | 'admin' | 'role_select' | 'login' = 'login';
 
     if (currentUser && currentUserRole && currentUserRole !== 'guest') {
       if (currentUserRole === 'admin') targetScreen = 'admin';
       else if (currentUserRole === 'store_owner') targetScreen = 'store';
       else if (currentUserRole === 'staff') targetScreen = 'staff';
       else targetScreen = 'customer';
+    } else if (googleAuthUser) {
+      targetScreen = 'role_select';
     } else {
       try {
         const saved = localStorage.getItem('waffer_user_session_v1');
@@ -37,12 +39,14 @@ export const SplashScreen: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!isAuthInitialized) return;
+
     const timer = setTimeout(() => {
       proceedToNextScreen();
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [currentUser, currentUserRole]);
+  }, [isAuthInitialized, currentUser, currentUserRole, googleAuthUser]);
 
   return (
     <div

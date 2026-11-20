@@ -55,6 +55,7 @@ interface AppContextType {
   // Navigation & Role State
   currentScreen: AppScreen;
   setCurrentScreen: (screen: AppScreen) => void;
+  isAuthInitialized: boolean;
   currentUserRole: UserRole;
   setCurrentUserRole: (role: UserRole) => void;
   currentUser: Profile | null;
@@ -139,6 +140,7 @@ const SESSION_STORAGE_KEY = 'waffer_user_session_v1';
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Always start with splash so returning users experience the brand loading
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
+  const [isAuthInitialized, setIsAuthInitialized] = useState<boolean>(false);
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('guest');
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [googleAuthUser, setGoogleAuthUser] = useState<GoogleAuthUser | null>(null);
@@ -223,6 +225,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } catch {
         // auth check fallback
+      } finally {
+        setIsAuthInitialized(true);
       }
     };
 
@@ -230,6 +234,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Listen for auth state changes (e.g., OAuth callback redirect)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setIsAuthInitialized(true);
       if (session?.user) {
         const user = session.user;
         const { data: profile } = await supabase
@@ -1022,6 +1027,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentScreen,
         setCurrentScreen,
+        isAuthInitialized,
         currentUserRole,
         setCurrentUserRole,
         currentUser,
