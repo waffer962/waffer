@@ -720,7 +720,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const signInWithGoogle = async () => {
     try {
       const supabase = createClient();
-      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://wevo.click';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -736,42 +736,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.warn('Google OAuth initiation notice:', errorMsg);
-
-      // Check if there is already a simulated existing user to recognize
-      const input = prompt(
-        'يرجى إدخال بريد Google لتسجيل الدخول مباشرة والتحقق من حسابك:',
-        'user@gmail.com'
-      );
-      if (input) {
-        const cleanEmail = input.trim().toLowerCase();
-        
-        // Check if this user already registered before in usersList
-        const existing = usersList.find((u) => u.email.toLowerCase() === cleanEmail);
-        if (existing && (existing.role === 'customer' || existing.role === 'store_owner')) {
-          const profile: Profile = {
-            id: existing.id,
-            email: existing.email,
-            full_name: existing.full_name,
-            phone: existing.phone,
-            role: existing.role as UserRole
-          };
-          setCurrentUser(profile);
-          setCurrentUserRole(profile.role);
-          persistSession(profile, profile.role);
-          setCurrentScreen(profile.role === 'store_owner' ? 'store' : 'customer');
-          return;
-        }
-
-        const gUser: GoogleAuthUser = {
-          id: `google-${Date.now()}`,
-          email: cleanEmail,
-          name: cleanEmail.split('@')[0],
-          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanEmail)}`
-        };
-        setGoogleAuthUser(gUser);
-        setCurrentScreen('role_select');
-      }
+      console.warn('Google OAuth error:', errorMsg);
     }
   };
 
