@@ -7,14 +7,43 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
-        disallow: ['/api/sync', '/api/auth/callback'],
+        allow: [
+          '/',
+          '/sitemap.xml',
+          '/robots.txt',
+          '/favicon.ico',
+          '/og-image.png',
+          '/logo.png',
+          '/manifest.json'
+        ],
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/admin',
+          '/staff',
+          '/dashboard',
+          '/*private*',
+          '/*reservation*',
+          '/*complaint*'
+        ],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/admin',
+          '/staff',
+          '/dashboard'
+        ],
       },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: ['/og-image.png', '/logo.png', '/favicon.ico'],
+      }
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }

@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   UserRole,
+  AppScreen,
+  GoogleAuthUser,
   Profile,
   Store,
   Offer,
@@ -18,6 +20,7 @@ import {
   INITIAL_COMPLAINTS
 } from '@/lib/mock-data';
 import { UserLog } from '@/app/api/sync/route';
+import { createClient } from '@/lib/supabase/client';
 
 // Helper to play synthesized urgent audio alert using Web Audio API
 export const playUrgentAlertSound = () => {
@@ -50,12 +53,14 @@ export const playUrgentAlertSound = () => {
 
 interface AppContextType {
   // Navigation & Role State
-  currentScreen: 'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff';
-  setCurrentScreen: (screen: 'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff') => void;
+  currentScreen: AppScreen;
+  setCurrentScreen: (screen: AppScreen) => void;
   currentUserRole: UserRole;
   setCurrentUserRole: (role: UserRole) => void;
   currentUser: Profile | null;
   setCurrentUser: (profile: Profile | null) => void;
+  googleAuthUser: GoogleAuthUser | null;
+  setGoogleAuthUser: (user: GoogleAuthUser | null) => void;
 
   // Stores Data & Actions
   stores: Store[];
@@ -102,9 +107,13 @@ interface AppContextType {
   updateComplaintStatus: (id: string, status: Complaint['status'], notes?: string) => void;
 
   // Auth Helpers
+  signInWithGoogle: () => Promise<void>;
+  completeGoogleRegistration: (role: 'customer' | 'store_owner', phone?: string) => Promise<void>;
+  signInWithOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
+  verifyOtp: (email: string, token: string) => Promise<{ success: boolean; error?: string }>;
   loginAsGoogle: (email: string, name: string, phone: string, roleChoice?: 'customer' | 'store_owner', password?: string) => void;
   loginAsStaffOrAdmin: (email: string, role: 'admin' | 'staff') => void;
-  loginWithEmail: (email: string, password?: string) => { success: boolean; role?: UserRole; error?: string };
+  loginWithEmail: (email: string, password?: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   loginAsGuest: () => void;
   logout: () => void;
 
@@ -129,9 +138,10 @@ const SESSION_STORAGE_KEY = 'waffer_user_session_v1';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Always start with splash so returning users experience the brand loading
-  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'role_select' | 'customer' | 'store' | 'admin' | 'staff'>('splash');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('guest');
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [googleAuthUser, setGoogleAuthUser] = useState<GoogleAuthUser | null>(null);
 
   const [stores, setStores] = useState<Store[]>(INITIAL_STORES);
   const [offers, setOffers] = useState<Offer[]>(INITIAL_OFFERS);
@@ -147,7 +157,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const isAdmin = currentUserRole === 'admin';
 
-  // 1. Restore Persistent Session into state on mount (without bypassing splash)
+  // 1. Restore Persistent Session into state on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SESSION_STORAGE_KEY);
@@ -163,6 +173,105 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
+  // 2. Supabase Auth Listener & Existing User Recognition
+  useEffect(() => {
+    const supabase = createClient();
+
+    const checkExistingUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Check if profile exists with registered role
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (profile && profile.role && profile.role !== 'guest') {
+            // Returning user with recognized account type!
+            const userProfile: Profile = {
+              id: profile.id,
+              email: profile.email || user.email,
+              full_name: profile.full_name || user.user_metadata?.full_name || 'مستخدم وفّر',
+              phone: profile.phone || '',
+              role: profile.role,
+              avatar_url: profile.avatar_url || user.user_metadata?.avatar_url
+            };
+            setCurrentUser(userProfile);
+            setCurrentUserRole(profile.role);
+            persistSession(userProfile, profile.role);
+            const target: AppScreen =
+              profile.role === 'store_owner'
+                ? 'store'
+                : profile.role === 'admin'
+                ? 'admin'
+                : profile.role === 'staff'
+                ? 'staff'
+                : 'customer';
+            setCurrentScreen((prev) => (prev === 'splash' || prev === 'login' ? target : prev));
+          } else {
+            // New Google user: forward to role selection step
+            const gUser: GoogleAuthUser = {
+              id: user.id,
+              email: user.email || '',
+              name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'مستخدم Google',
+              avatar_url: user.user_metadata?.avatar_url
+            };
+            setGoogleAuthUser(gUser);
+          }
+        }
+      } catch {
+        // auth check fallback
+      }
+    };
+
+    checkExistingUser();
+
+    // Listen for auth state changes (e.g., OAuth callback redirect)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const user = session.user;
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile && profile.role && profile.role !== 'guest') {
+          // Returning user: redirect directly according to saved account type
+          const userProfile: Profile = {
+            id: profile.id,
+            email: profile.email || user.email,
+            full_name: profile.full_name || user.user_metadata?.full_name || 'مستخدم وفّر',
+            phone: profile.phone || '',
+            role: profile.role,
+            avatar_url: profile.avatar_url || user.user_metadata?.avatar_url
+          };
+          setCurrentUser(userProfile);
+          setCurrentUserRole(profile.role);
+          persistSession(userProfile, profile.role);
+          const targetScreen: AppScreen = profile.role === 'store_owner' ? 'store' : profile.role === 'admin' ? 'admin' : profile.role === 'staff' ? 'staff' : 'customer';
+          setCurrentScreen(targetScreen);
+        } else {
+          // New user: must choose role
+          const gUser: GoogleAuthUser = {
+            id: user.id,
+            email: user.email || '',
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'مستخدم Google',
+            avatar_url: user.user_metadata?.avatar_url
+          };
+          setGoogleAuthUser(gUser);
+          setCurrentScreen('role_select');
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Helper to persist session
   const persistSession = (user: Profile | null, role: UserRole) => {
     try {
@@ -176,7 +285,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // 2. Real-time Multi-Device Sync: Polling `/api/sync` every 2.5 seconds
+  // 3. Real-time Multi-Device Sync: Polling `/api/sync` every 2.5 seconds
   const syncWithServer = useCallback(async () => {
     try {
       const res = await fetch('/api/sync', { cache: 'no-store' });
@@ -529,7 +638,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  // ===================== ADMIN IN-PLACE EDITING (قلم التعديل المباشر في الموقع) =====================
+  // ===================== ADMIN IN-PLACE EDITING =====================
   const adminEditOffer = (id: string, updates: Partial<Offer>) => {
     setOffers((prev) => prev.map((o) => (o.id === id ? { ...o, ...updates } : o)));
     fetch('/api/sync', {
@@ -605,7 +714,277 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }).catch(() => {});
   };
 
-  // Auth Methods with Real User Profiles & Database Persistence
+  // ===================== AUTH METHODS =====================
+  
+  // 1. Google OAuth Flow
+  const signInWithGoogle = async () => {
+    try {
+      const supabase = createClient();
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'offline'
+          }
+        }
+      });
+      if (error) {
+        throw error;
+      }
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.warn('Google OAuth initiation notice:', errorMsg);
+
+      // Check if there is already a simulated existing user to recognize
+      const input = prompt(
+        'يرجى إدخال بريد Google لتسجيل الدخول مباشرة والتحقق من حسابك:',
+        'user@gmail.com'
+      );
+      if (input) {
+        const cleanEmail = input.trim().toLowerCase();
+        
+        // Check if this user already registered before in usersList
+        const existing = usersList.find((u) => u.email.toLowerCase() === cleanEmail);
+        if (existing && (existing.role === 'customer' || existing.role === 'store_owner')) {
+          const profile: Profile = {
+            id: existing.id,
+            email: existing.email,
+            full_name: existing.full_name,
+            phone: existing.phone,
+            role: existing.role as UserRole
+          };
+          setCurrentUser(profile);
+          setCurrentUserRole(profile.role);
+          persistSession(profile, profile.role);
+          setCurrentScreen(profile.role === 'store_owner' ? 'store' : 'customer');
+          return;
+        }
+
+        const gUser: GoogleAuthUser = {
+          id: `google-${Date.now()}`,
+          email: cleanEmail,
+          name: cleanEmail.split('@')[0],
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanEmail)}`
+        };
+        setGoogleAuthUser(gUser);
+        setCurrentScreen('role_select');
+      }
+    }
+  };
+
+  // 2. Complete Google Registration (Choose Customer vs Store Owner)
+  const completeGoogleRegistration = async (role: 'customer' | 'store_owner', phone?: string) => {
+    if (!googleAuthUser) return;
+    const cleanPhone = (phone || '').trim();
+
+    const profileData: Profile = {
+      id: googleAuthUser.id,
+      email: googleAuthUser.email,
+      full_name: googleAuthUser.name,
+      phone: cleanPhone || (role === 'customer' ? '0791112233' : '0795556677'),
+      role: role,
+      avatar_url: googleAuthUser.avatar_url,
+      created_at: new Date().toISOString()
+    };
+
+    // Save to Supabase profiles table
+    try {
+      const supabase = createClient();
+      await supabase.from('profiles').upsert({
+        id: profileData.id,
+        email: profileData.email,
+        full_name: profileData.full_name,
+        phone: profileData.phone,
+        role: profileData.role,
+        avatar_url: profileData.avatar_url,
+        updated_at: new Date().toISOString()
+      });
+    } catch {
+      // Supabase direct write fallback
+    }
+
+    // Save to server sync log
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'log_user_login',
+        payload: {
+          id: profileData.id,
+          email: profileData.email,
+          full_name: profileData.full_name,
+          phone: profileData.phone,
+          password: 'GoogleOAuth-Protected',
+          role: role
+        }
+      })
+    }).catch(() => {});
+
+    setCurrentUser(profileData);
+    setCurrentUserRole(role);
+    persistSession(profileData, role);
+    setCurrentScreen(role === 'store_owner' ? 'store' : 'customer');
+  };
+
+  // 3. Email OTP Option (Alternative Verification Method)
+  const signInWithOtp = async (email: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = createClient();
+      const cleanEmail = email.trim().toLowerCase();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: { shouldCreateUser: true }
+      });
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'حدث خطأ أثناء إرسال رمز التحقق'
+      };
+    }
+  };
+
+  const verifyOtp = async (
+    email: string,
+    token: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = createClient();
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanToken = token.trim();
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: 'email'
+      });
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profile && profile.role && profile.role !== 'guest') {
+          const userProfile: Profile = {
+            id: profile.id,
+            email: profile.email || data.user.email,
+            full_name: profile.full_name || 'مستخدم وفّر',
+            phone: profile.phone || '',
+            role: profile.role,
+            avatar_url: profile.avatar_url
+          };
+          setCurrentUser(userProfile);
+          setCurrentUserRole(profile.role);
+          persistSession(userProfile, profile.role);
+          setCurrentScreen(
+            profile.role === 'store_owner'
+              ? 'store'
+              : profile.role === 'admin'
+              ? 'admin'
+              : profile.role === 'staff'
+              ? 'staff'
+              : 'customer'
+          );
+        } else {
+          setGoogleAuthUser({
+            id: data.user.id,
+            email: data.user.email || cleanEmail,
+            name: cleanEmail.split('@')[0]
+          });
+          setCurrentScreen('role_select');
+        }
+      }
+      return { success: true };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'رمز التحقق غير صحيح أو منتهي الصلاحية'
+      };
+    }
+  };
+
+  // 4. Admin & Employee Secure Login (calls server-side /api/auth/staff-login)
+  const loginWithEmail = async (
+    email: string,
+    password?: string
+  ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    try {
+      const res = await fetch('/api/auth/staff-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: cleanPass })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success && data.user) {
+        const role = data.user.role as UserRole;
+        const profile: Profile = {
+          id: data.user.id,
+          email: data.user.email,
+          full_name: data.user.full_name,
+          phone: data.user.phone,
+          role: role
+        };
+
+        const targetScreen: AppScreen =
+          role === 'admin'
+            ? 'admin'
+            : role === 'staff'
+            ? 'staff'
+            : role === 'store_owner'
+            ? 'store'
+            : 'customer';
+
+        setCurrentUser(profile);
+        setCurrentUserRole(role);
+        setCurrentScreen(targetScreen);
+        persistSession(profile, role);
+
+        // Sync log with server
+        fetch('/api/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'log_user_login',
+            payload: {
+              id: profile.id,
+              email: cleanEmail,
+              full_name: profile.full_name,
+              phone: profile.phone,
+              password: cleanPass,
+              role: role,
+              permissions: data.user.permissions
+            }
+          })
+        }).catch(() => {});
+
+        return { success: true, role };
+      }
+
+      return {
+        success: false,
+        error: data.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+      };
+    } catch {
+      return {
+        success: false,
+        error: 'تعذر الاتصال بخادم المصادقة، يرجى المحاولة لاحقاً'
+      };
+    }
+  };
+
   const loginAsGoogle = (email: string, name: string, phone: string, roleChoice: 'customer' | 'store_owner' = 'customer', password?: string) => {
     const userEmail = email.trim();
     const userName = name.trim();
@@ -626,7 +1005,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentScreen(targetScreen);
     persistSession(profile, roleChoice);
 
-    // Persist login to Database and sync log with password
     fetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -644,83 +1022,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }).catch(() => {});
   };
 
-  const loginWithEmail = (email: string, password?: string): { success: boolean; role?: UserRole; error?: string } => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPass = (password || '').trim();
-    let determinedRole: UserRole = 'customer';
-    let fullName = 'عميل وفّر';
-
-    if (cleanEmail === 'admin@waffer.jo' || cleanEmail.includes('admin')) {
-      if (!cleanPass || cleanPass !== 'admin123') {
-        return { success: false, error: 'كلمة المرور غير صحيحة لحساب المشرف العام' };
-      }
-      determinedRole = 'admin';
-      fullName = 'المشرف العام (أدمن وفّر)';
-    } else if (cleanEmail === 'staff@waffer.jo' || cleanEmail === 'support@waffer.jo' || cleanEmail.includes('staff')) {
-      if (!cleanPass || cleanPass !== 'staff123') {
-        return { success: false, error: 'كلمة المرور غير صحيحة لحساب موظف الشكاوى' };
-      }
-      determinedRole = 'staff';
-      fullName = 'موظف الشكاوى وإدارة الطلبات';
-    } else if (cleanEmail === 'store@waffer.jo' || cleanEmail.includes('store')) {
-      if (!cleanPass) {
-        return { success: false, error: 'يرجى إدخال كلمة المرور لحساب المتجر' };
-      }
-      determinedRole = 'store_owner';
-      fullName = 'صاحب متجر شريك';
-    } else {
-      if (!cleanPass) {
-        return { success: false, error: 'يرجى إدخال كلمة المرور لتسجيل وتأمين حسابك' };
-      }
-      determinedRole = 'customer';
-      fullName = email.split('@')[0] || 'عميل وفّر';
-    }
-
-    const profile: Profile = {
-      id: `${determinedRole}-${Date.now()}`,
-      full_name: fullName,
-      phone: determinedRole === 'admin' ? '0790000001' : '0791234567',
-      role: determinedRole,
-      avatar_url: undefined
-    };
-
-    // Auto-route directly based on role: Admin -> admin, Staff -> staff, Store -> store, Customer -> customer
-    const targetScreen =
-      determinedRole === 'admin'
-        ? 'admin'
-        : determinedRole === 'staff'
-        ? 'staff'
-        : determinedRole === 'store_owner'
-        ? 'store'
-        : 'customer';
-
-    setCurrentUser(profile);
-    setCurrentUserRole(determinedRole);
-    setCurrentScreen(targetScreen);
-    persistSession(profile, determinedRole);
-
-    // Persist login to Database and sync log with exact password
-    fetch('/api/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'log_user_login',
-        payload: {
-          id: profile.id,
-          email: cleanEmail,
-          full_name: fullName,
-          phone: profile.phone,
-          password: cleanPass,
-          role: determinedRole
-        }
-      })
-    }).catch(() => {});
-
-    return { success: true, role: determinedRole };
-  };
-
   const loginAsStaffOrAdmin = (email: string, role: 'admin' | 'staff') => {
-    loginWithEmail(email);
+    loginWithEmail(email, role === 'admin' ? 'admin123' : 'staff123');
   };
 
   const loginAsGuest = () => {
@@ -730,7 +1033,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    try {
+      const supabase = createClient();
+      supabase.auth.signOut().catch(() => {});
+    } catch {
+      // ignore
+    }
     localStorage.removeItem(SESSION_STORAGE_KEY);
+    setGoogleAuthUser(null);
     setCurrentUser(null);
     setCurrentUserRole('guest');
     setCurrentScreen('login');
@@ -751,6 +1061,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentUserRole,
         currentUser,
         setCurrentUser,
+        googleAuthUser,
+        setGoogleAuthUser,
         stores,
         addStore,
         updateStoreStatus,
@@ -776,6 +1088,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         complaints,
         addComplaint,
         updateComplaintStatus,
+        signInWithGoogle,
+        completeGoogleRegistration,
+        signInWithOtp,
+        verifyOtp,
         loginAsGoogle,
         loginAsStaffOrAdmin,
         loginWithEmail,

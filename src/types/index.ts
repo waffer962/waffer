@@ -1,7 +1,25 @@
 export type UserRole = 'customer' | 'store_owner' | 'admin' | 'staff' | 'guest';
 
+export type AppScreen =
+  | 'splash'
+  | 'login'
+  | 'admin_login'
+  | 'role_select'
+  | 'customer'
+  | 'store'
+  | 'admin'
+  | 'staff';
+
+export interface GoogleAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  avatar_url?: string;
+}
+
 export interface Profile {
   id: string;
+  email?: string;
   full_name: string;
   phone?: string;
   role: UserRole;

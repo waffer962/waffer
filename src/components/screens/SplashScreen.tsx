@@ -9,10 +9,11 @@ export const SplashScreen: React.FC = () => {
   const { setCurrentScreen, currentUser, currentUserRole } = useApp();
 
   const proceedToNextScreen = () => {
-    let targetScreen: 'customer' | 'store' | 'staff' | 'login' = 'login';
+    let targetScreen: 'customer' | 'store' | 'staff' | 'admin' | 'login' = 'login';
 
     if (currentUser && currentUserRole && currentUserRole !== 'guest') {
-      if (currentUserRole === 'store_owner') targetScreen = 'store';
+      if (currentUserRole === 'admin') targetScreen = 'admin';
+      else if (currentUserRole === 'store_owner') targetScreen = 'store';
       else if (currentUserRole === 'staff') targetScreen = 'staff';
       else targetScreen = 'customer';
     } else {
@@ -21,7 +22,8 @@ export const SplashScreen: React.FC = () => {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed?.role && parsed.role !== 'guest') {
-            if (parsed.role === 'store_owner') targetScreen = 'store';
+            if (parsed.role === 'admin') targetScreen = 'admin';
+            else if (parsed.role === 'store_owner') targetScreen = 'store';
             else if (parsed.role === 'staff') targetScreen = 'staff';
             else targetScreen = 'customer';
           }
