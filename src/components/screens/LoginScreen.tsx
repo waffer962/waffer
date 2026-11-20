@@ -343,7 +343,7 @@ export const LoginScreen: React.FC = () => {
                 type="submit"
                 className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.98] cursor-pointer"
               >
-                متابعة وحفظ الحساب وكلمة المرور في الداتابيس 🔒
+                متابعة وإنشاء الحساب في النظام
               </button>
             </form>
           </div>

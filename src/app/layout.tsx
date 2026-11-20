@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Cairo } from "next/font/google";
 import "./globals.css";
-
-const cairo = Cairo({
-  variable: "--font-cairo",
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://waffer.jo";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "وفّـر | Waffer - منصة فائض الطعام وعروض التوفير في الأردن 🇯🇴",
+    default: "وفّـر | Waffer - منصة فائض الطعام وعروض التوفير في الأردن",
     template: "%s | وفّـر Waffer",
   },
   description:
@@ -124,8 +117,14 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased font-sans`}>
+    <html lang="ar" dir="rtl" className="h-full antialiased font-sans">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

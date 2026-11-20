@@ -308,7 +308,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setStores((prev) => [newStore, ...prev]);
     selectStore(newStore.id);
-    addNotification('تم تسجيل متجرك بنجاح 🏪', `أهلاً بك في ${newStore.name}! تم تفعيل متجرك وبإمكانك الآن إضافة وجباتك واستقبال الطلبات فوراً.`);
+    addNotification('تم تسجيل متجرك بنجاح', `أهلاً بك في ${newStore.name}! تم تفعيل متجرك وبإمكانك الآن إضافة وجباتك واستقبال الطلبات فوراً.`);
 
     // Sync to server
     fetch('/api/sync', {
@@ -341,7 +341,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       created_at: new Date().toISOString()
     };
     setOffers((prev) => [newOffer, ...prev]);
-    addNotification('تم نشر عرض جديد 🍞', `تم نشر العرض "${newOffer.title}" بنجاح في متجرك.`);
+    addNotification('تم نشر عرض جديد', `تم نشر العرض "${newOffer.title}" بنجاح في متجرك.`);
   };
 
   const toggleOfferActive = (offerId: string) => {
@@ -365,7 +365,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       created_at: new Date().toISOString()
     };
     setOffers((prev) => [republished, ...prev]);
-    addNotification('إعادة نشر العرض 🔁', `تمت إعادة نشر عرض "${offer.title}" وتجديد الكميات.`);
+    addNotification('إعادة نشر العرض', `تمت إعادة نشر عرض "${offer.title}" وتجديد الكميات.`);
   };
 
   // Create Reservation with automatic 50% large-order detection & server sync
@@ -441,14 +441,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Send notifications
     if (isLarge) {
       addNotification(
-        '⚠️ طلب حجز عاجل (تجاوز 50%)!',
+        'طلب حجز عاجل (تجاوز 50%)',
         `طلب كبير جديد من ${customerName} للكمية ${quantity} (${Math.round(ratio * 100)}% من الكمية). يرجى الرد الفوري!`,
         'urgent'
       );
       playUrgentAlertSound();
     } else {
       addNotification(
-        'طلب حجز جديد 🛒',
+        'طلب حجز جديد',
         `تم استلام حجز جديد برقم ${bookingCode} للكمية ${quantity}. يرجى الموافقة أو الرفض.`
       );
     }
@@ -492,11 +492,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const target = reservations.find((r) => r.id === id);
     if (target) {
       if (status === 'confirmed') {
-        addNotification('تم تأكيد الحجز ✅', `تمت الموافقة على الحجز ${target.booking_code}. بإمكان الزبون الحضور للاستلام.`);
+        addNotification('تم تأكيد الحجز', `تمت الموافقة على الحجز ${target.booking_code}. بإمكان الزبون الحضور للاستلام.`);
       } else if (status === 'rejected') {
-        addNotification('تم رفض الحجز ❌', `تم رفض الحجز ${target.booking_code} وإشعار الزبون.`);
+        addNotification('تم رفض الحجز', `تم رفض الحجز ${target.booking_code} وإشعار الزبون.`);
       } else if (status === 'completed') {
-        addNotification('اكتمل الطلب 🎉', `تم تسليم الحجز ${target.booking_code} واستلام المبلغ نقدًا.`);
+        addNotification('اكتمل الطلب', `تم تسليم الحجز ${target.booking_code} واستلام المبلغ نقدًا.`);
       }
     }
 
@@ -520,7 +520,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       created_at: new Date().toISOString()
     };
     setComplaints((prev) => [newComplaint, ...prev]);
-    addNotification('تم تسجيل شكوى جديدة 📋', `تم استلام الشكوى "${data.subject}" وجاري مراجعتها من قِبل موظف الدعم.`);
+    addNotification('تم تسجيل شكوى جديدة', `تم استلام الشكوى "${data.subject}" وجاري مراجعتها من قِبل موظف الدعم.`);
   };
 
   const updateComplaintStatus = (id: string, status: Complaint['status'], notes?: string) => {
@@ -610,7 +610,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const userEmail = email.trim();
     const userName = name.trim();
     const userPhone = phone.trim();
-    const userPassword = (password || '').trim() || 'GooglePass-🔒';
+    const userPassword = (password || '').trim() || 'GooglePass-Secured';
 
     const profile: Profile = {
       id: `google-${Date.now()}`,

@@ -52,7 +52,7 @@ export interface Offer {
   pickup_end: string; // e.g. "23:00"
   category: string;
   is_free?: boolean; // وجبة مجانية
-  charity_badge?: string; // e.g. "وجبة مجانية 💚"
+  charity_badge?: string; // e.g. "وجبة مجانية"
   is_active: boolean;
   created_at: string;
 }

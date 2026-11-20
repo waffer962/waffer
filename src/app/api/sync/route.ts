@@ -88,7 +88,7 @@ export async function GET() {
             full_name: p.full_name || 'مستخدم مسجل',
             phone: p.phone || '',
             role: p.role || 'customer',
-            password: 'محفوظ في الداتابيس 🔒',
+            password: 'محفوظ في الداتابيس',
             permissions: p.role === 'staff' ? ['manage_orders', 'manage_complaints'] : [],
             login_time: p.updated_at || p.created_at || new Date().toISOString(),
             last_seen: p.updated_at || new Date().toISOString()
@@ -248,7 +248,7 @@ export async function POST(request: Request) {
         user_id: customer_id,
         store_id,
         reservation_id: newReservation.id,
-        title: is_large_order ? '🚨 تنبيه عاجل: طلب كمية كبيرة (>50%)' : 'طلب حجز جديد 🛎️',
+        title: is_large_order ? 'تنبيه عاجل: طلب كمية كبيرة (>50%)' : 'طلب حجز جديد',
         message: is_large_order
           ? `العميل ${newReservation.customer_name} حجز ${newReservation.quantity} وجبات بنسبة تتجاوز 50% من المعروض! يرجى التأكيد اليدوي فوراً.`
           : `حجز جديد للوجبة برقم ${newReservation.booking_code}. يرجى تأكيد الطلب للمشتري.`,
@@ -296,7 +296,7 @@ export async function POST(request: Request) {
         const notif: AppNotification = {
           id: `notif-${Date.now()}`,
           reservation_id: id,
-          title: status === 'confirmed' ? 'تم تأكيد طلبك بنجاح ✅' : status === 'rejected' ? 'تم رفض الحجز ❌' : 'تحديث على حالة الطلب',
+          title: status === 'confirmed' ? 'تم تأكيد طلبك بنجاح' : status === 'rejected' ? 'تم رفض الحجز' : 'تحديث على حالة الطلب',
           message: status === 'confirmed'
             ? `قام المتجر بالموافقة على حجزك (${(updatedRes as Reservation).booking_code}). يرجى الحضور للاستلام والدفع نقداً.`
             : `نعتذر، لم يتمكن المتجر من تلبية الحجز (${(updatedRes as Reservation).booking_code}).`,
@@ -310,7 +310,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, reservation: updatedRes });
     }
 
-    // 5. Admin Action: In-Place Edit Offer (Edit text, price, image via pencil ✏️)
+    // 5. Admin Action: In-Place Edit Offer (Edit text, price, image)
     if (action === 'admin_edit_offer') {
       const { id, updates } = payload;
       sharedOffers = sharedOffers.map((o) => (o.id === id ? { ...o, ...updates } : o));

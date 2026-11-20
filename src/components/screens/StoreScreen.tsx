@@ -134,7 +134,7 @@ export const StoreScreen: React.FC = () => {
       pickup_end: pickupEnd,
       category: isFree ? 'وجبات مجانية' : offerCategory,
       is_free: isFree,
-      charity_badge: isFree ? 'وجبة مجانية 💚' : undefined,
+      charity_badge: isFree ? 'وجبة مجانية' : undefined,
       is_active: true
     });
 
@@ -167,7 +167,7 @@ export const StoreScreen: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-base sm:text-lg font-black text-slate-900">
-                  بوابة إدارة المتاجر والشركاء 🏪
+                  بوابة إدارة المتاجر والشركاء
                 </h1>
                 <p className="text-xs text-slate-500">
                   اختر متجرك للدخول إلى لوحة التحكم أو سجّل متجراً جديداً
@@ -219,9 +219,9 @@ export const StoreScreen: React.FC = () => {
           {!isRegisteringStore ? (
             /* List of existing stores to pick from */
             <div className="space-y-4">
-              <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 leading-relaxed flex items-center justify-between gap-3">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 leading-relaxed flex items-center justify-between gap-3">
                 <span>
-                  💡 <span className="font-bold">ملاحظة:</span> اختر متجرك للدخول فوراً وإدارة العروض والطلبات، أو اضغط زر تسجيل متجر جديد لإضافة بيانات متجرك الخاص.
+                  <span className="font-bold">ملاحظة:</span> اختر متجرك للدخول فوراً وإدارة العروض والطلبات، أو اضغط زر تسجيل متجر جديد لإضافة بيانات متجرك الخاص.
                 </span>
               </div>
 
@@ -272,7 +272,7 @@ export const StoreScreen: React.FC = () => {
             <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs max-w-2xl mx-auto space-y-6">
               <div className="space-y-1 text-right">
                 <h2 className="text-lg font-black text-slate-900">
-                  إضافة وتسجيل متجرك الجديد في وفّـر 🏪
+                  إضافة وتسجيل متجرك الجديد في وفّـر
                 </h2>
                 <p className="text-xs text-slate-500">
                   أدخل بيانات متجرك لتفتتح لوحة التحكم وتبدأ بعرض طعامك الفائض وتقليل الهدر فوراً
@@ -400,9 +400,9 @@ export const StoreScreen: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.98] cursor-pointer"
+                  className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl font-bold text-sm shadow-sm transition active:scale-[0.98] cursor-pointer"
                 >
-                  حفظ المتجر والبدء بإدارته فوراً 🚀
+                  حفظ المتجر والبدء بإدارته فوراً
                 </button>
               </form>
             </div>
@@ -418,10 +418,10 @@ export const StoreScreen: React.FC = () => {
       {/* Top Urgent Alert Banner (>50% Large Order Requirement) */}
       {hasPendingUrgentOrders && (
         <div className="w-full bg-red-600 text-white px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
-          <div className="flex items-center gap-2.5 text-xs sm:text-sm font-black">
-            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-300 animate-bounce" />
+          <div className="flex items-center gap-2.5 text-xs sm:text-sm font-bold">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-300" />
             <span>
-              ⚠️ تنبيه عاجل: لديك {urgentOrdersCount} طلب كمية كبيرة تتجاوز 50% من المعروض بانتظار ردك الفوري!
+              تنبيه عاجل: لديك {urgentOrdersCount} طلب كمية كبيرة تتجاوز 50% من المعروض بانتظار ردك الفوري.
             </span>
           </div>
 
@@ -455,8 +455,8 @@ export const StoreScreen: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-black text-base text-slate-900">{currentStore?.name || 'متجري'}</h3>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                  متجر معتمد ✅
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold">
+                  متجر معتمد
                 </span>
                 {/* Switch Store Button */}
                 <button
@@ -609,7 +609,9 @@ export const StoreScreen: React.FC = () => {
 
               {pendingReservations.length === 0 ? (
                 <div className="py-12 text-center text-xs text-slate-600 space-y-2">
-                  <div className="text-3xl">👍</div>
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                  </div>
                   <p className="font-bold text-slate-900 text-sm">لا توجد طلبات جديدة بانتظار الرد حالياً</p>
                   <p className="text-slate-500">تم الرد على كافة الحجوزات الواردة لمتجرك.</p>
                 </div>
@@ -627,7 +629,7 @@ export const StoreScreen: React.FC = () => {
                         </div>
                         {r.is_large_order && (
                           <span className="px-2.5 py-1 rounded-xl bg-red-600 text-white text-[10px] font-bold">
-                            طلب كبير &gt; 50% 🔥
+                            طلب كبير &gt; 50%
                           </span>
                         )}
                       </div>
@@ -761,9 +763,9 @@ export const StoreScreen: React.FC = () => {
                   className="mt-1 w-5 h-5 text-emerald-600 rounded-lg border-emerald-400 focus:ring-emerald-500 cursor-pointer"
                 />
                 <label htmlFor="charityFreeCheck" className="text-xs cursor-pointer select-none">
-                  <span className="font-black text-emerald-900 block text-sm flex items-center gap-1.5">
-                    <span>تقديم الوجبة مجاناً (0.00 د.أ) 💚</span>
-                    <span className="text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">وجبة مجانية</span>
+                  <span className="font-bold text-emerald-950 block text-sm flex items-center gap-1.5">
+                    <span>تقديم الوجبة مجاناً (0.00 د.أ)</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">وجبة مجانية</span>
                   </span>
                   <span className="text-slate-600 font-medium block mt-1 leading-relaxed">
                     مبادرة تقديم وجبات طعام مجاناً للمحتاجين وعابري السبيل. إذا كنت ترغب في وضع سعر رمزي بسيط (مثل 0.25 أو 0.50 د.أ)، اترك الخيار غير محدد وضع السعر في خانة السعر أدناه.
@@ -891,21 +893,21 @@ export const StoreScreen: React.FC = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold ${
                             isConfirmed
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                               : isPending
-                              ? 'bg-amber-100 text-amber-800'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
                               : isCompleted
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-slate-100 text-slate-800 border border-slate-200'
+                              : 'bg-red-50 text-red-800 border border-red-200'
                           }`}
                         >
                           {isConfirmed
-                            ? 'موافق عليه ✅'
+                            ? 'موافق عليه'
                             : isPending
-                            ? 'بانتظار الموافقة ⏳'
+                            ? 'بانتظار الموافقة'
                             : isCompleted
-                            ? 'تم التسليم 💰'
-                            : 'مرفوض ❌'}
+                            ? 'تم التسليم'
+                            : 'مرفوض'}
                         </span>
                       </div>
 
@@ -951,11 +953,12 @@ export const StoreScreen: React.FC = () => {
 
                         {isConfirmed && (
                           <button
+                            type="button"
                             onClick={() => updateReservationStatus(res.id, 'completed')}
-                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                           >
                             <CheckCircle2 className="w-4 h-4" />
-                            <span>تم التسليم واستلام المبلغ نقدًا 💵</span>
+                            <span>تم التسليم واستلام المبلغ نقدًا</span>
                           </button>
                         )}
                       </div>
@@ -1010,11 +1013,11 @@ export const StoreScreen: React.FC = () => {
                         متبقي {offer.quantity_available} من {offer.initial_quantity} قطع
                       </p>
                       {offer.is_free || offer.discounted_price === 0 ? (
-                        <p className="font-black text-emerald-700 text-xs mt-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 inline-block">
-                          وجبة مجانية 💚 (0.00 د.أ)
+                        <p className="font-bold text-emerald-800 text-xs mt-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 inline-block">
+                          وجبة مجانية (0.00 د.أ)
                         </p>
                       ) : (
-                        <p className="font-black text-emerald-700 text-sm mt-1">{offer.discounted_price.toFixed(2)} د.أ</p>
+                        <p className="font-bold text-emerald-800 text-sm mt-1 font-mono">{offer.discounted_price.toFixed(2)} د.أ</p>
                       )}
                     </div>
                   </div>
@@ -1075,8 +1078,8 @@ export const StoreScreen: React.FC = () => {
 
               <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
                 <span className="text-slate-600 block mb-1 font-medium">وجبات تم إنقاذها</span>
-                <span className="text-3xl font-black text-amber-600">
-                  {completedOrders.reduce((sum, r) => sum + r.quantity, 0)} وجبة 🌱
+                <span className="text-3xl font-black text-amber-700 font-mono">
+                  {completedOrders.reduce((sum, r) => sum + r.quantity, 0)} وجبة
                 </span>
                 <span className="text-xs text-slate-500 block mt-2">تقليل مباشر لهدر الطعام</span>
               </div>

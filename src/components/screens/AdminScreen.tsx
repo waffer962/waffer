@@ -10,14 +10,13 @@ import {
   Users,
   FileText,
   AlertOctagon,
-  CheckCircle,
-  XCircle,
+  CheckCircle2,
   Plus,
   Trash2,
-  Edit,
+  Edit3,
   LogOut,
   Bell,
-  Sparkles
+  Check
 } from 'lucide-react';
 
 export const AdminScreen: React.FC = () => {
@@ -46,7 +45,7 @@ export const AdminScreen: React.FC = () => {
   const [staffCreatedMsg, setStaffCreatedMsg] = useState('');
 
   // Editable Site Announcement
-  const [siteBanner, setSiteBanner] = useState('🌱 مرحباً بكم في وفّر - معاً للحد من هدر الطعام وتوفير وجبات طازجة بأسعار مخفضة في كافة محافظات الأردن!');
+  const [siteBanner, setSiteBanner] = useState('مرحباً بكم في وفّر - معاً للحد من هدر الطعام وتوفير وجبات طازجة بأسعار مخفضة في كافة محافظات الأردن');
   const [bannerSavedMsg, setBannerSavedMsg] = useState('');
 
   const handleAddStaff = (e: React.FormEvent) => {
@@ -63,7 +62,7 @@ export const AdminScreen: React.FC = () => {
         canTrack
       }
     ]);
-    setStaffCreatedMsg(`تم إنشاء حساب الموظف ${newStaffName} بنجاح!`);
+    setStaffCreatedMsg(`تم إنشاء حساب الموظف ${newStaffName} بنجاح.`);
     setNewStaffName('');
     setNewStaffEmail('');
     setTimeout(() => setStaffCreatedMsg(''), 2500);
@@ -75,29 +74,32 @@ export const AdminScreen: React.FC = () => {
   return (
     <div className="flex-1 w-full bg-slate-50 text-slate-900 flex flex-col pb-16 min-h-screen">
       {/* Top Admin Header */}
-      <div className="w-full bg-white border-b border-slate-200 shadow-2xs">
+      <header className="w-full bg-slate-900 text-white border-b border-slate-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-slate-800 text-emerald-400 border border-slate-700 flex items-center justify-center font-bold">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-black text-base text-slate-900">لوحة تحكم الأدمن الرئيسي</h3>
-              <p className="text-xs text-purple-700 font-medium">صلاحيات إدارة مركزية شاملة لمنصة وفّر في الأردن 🇯🇴</p>
+              <h1 className="font-black text-base text-white">لوحة الإدارة المركزية</h1>
+              <p className="text-xs text-slate-400 font-medium">إدارة المتاجر والعروض والموظفين عبر منصة وفّر الأردن</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setCurrentScreen('customer')}
-              className="text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 transition cursor-pointer shadow-2xs"
+              className="text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 font-bold flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-700 transition cursor-pointer"
             >
-              <span>تصفح وتعديل الموقع المباشر بالقلم ✏️</span>
+              <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>التعديل المباشر في واجهة الموقع</span>
             </button>
 
             <button
+              type="button"
               onClick={logout}
-              className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition cursor-pointer"
+              className="text-xs text-red-300 hover:text-white font-bold flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 transition cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>تسجيل الخروج</span>
@@ -105,70 +107,85 @@ export const AdminScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Admin Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold border-t border-slate-100 pt-2 pb-2">
+        {/* Admin Navigation Tabs */}
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold border-t border-slate-800 pt-2 pb-2">
           <button
+            type="button"
             onClick={() => setActiveTab('stores')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer ${
-              activeTab === 'stores' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'stores'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
-            المتاجر ({stores.length})
+            <span>المتاجر ({stores.length})</span>
             {pendingStores.length > 0 && (
-              <span className="mr-2 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black">
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">
                 {pendingStores.length} معلق
               </span>
             )}
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('offers')}
             className={`px-4 py-2 rounded-xl transition cursor-pointer ${
-              activeTab === 'offers' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'offers'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
             مراقبة العروض ({offers.length})
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('staff')}
             className={`px-4 py-2 rounded-xl transition cursor-pointer ${
-              activeTab === 'staff' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'staff'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
-            الموظفين والصلاحيات ({staffList.length})
+            الموظفون والصلاحيات ({staffList.length})
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('content')}
             className={`px-4 py-2 rounded-xl transition cursor-pointer ${
-              activeTab === 'content' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'content'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
             محتوى الموقع
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('complaints')}
             className={`px-4 py-2 rounded-xl transition cursor-pointer ${
-              activeTab === 'complaints' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'complaints'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
             سجل الشكاوى ({complaints.length})
           </button>
-        </div>
-      </div>
+        </nav>
+      </header>
 
       {/* Main Tab Content */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-6 text-xs">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 space-y-6 text-xs">
         {/* ================= STORES TAB ================= */}
         {activeTab === 'stores' && (
           <div className="space-y-6">
             <div>
-              <h4 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                <StoreIcon className="w-5 h-5 text-purple-600" />
-                <span>إدارة طلبات المتاجر واعتمادها</span>
-              </h4>
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <StoreIcon className="w-5 h-5 text-emerald-700" />
+                <span>إدارة طلبات المتاجر والاعتماد</span>
+              </h2>
               <p className="text-xs text-slate-600 mt-0.5 font-medium">
                 مراجعة بيانات المخابز والمطاعم المتقدمة للاعتماد أو إيقاف المتاجر المخالفة
               </p>
@@ -177,38 +194,40 @@ export const AdminScreen: React.FC = () => {
             {/* Pending Stores Approval Queue */}
             {pendingStores.length > 0 && (
               <div className="space-y-3">
-                <span className="text-xs font-bold text-amber-700 block">
+                <span className="text-xs font-bold text-amber-800 block">
                   طلبات تسجيل جديدة بانتظار الموافقة ({pendingStores.length}):
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {pendingStores.map((s) => (
                     <div
                       key={s.id}
-                      className="p-5 bg-amber-50/70 border border-amber-200 rounded-3xl space-y-3 shadow-xs"
+                      className="p-5 bg-white border border-amber-300 rounded-2xl space-y-3 shadow-xs"
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h5 className="font-bold text-base text-slate-900">{s.name}</h5>
+                          <h3 className="font-bold text-base text-slate-900">{s.name}</h3>
                           <p className="text-xs text-slate-700 mt-0.5">المالك: {s.owner_name} • {s.phone}</p>
                           <p className="text-xs text-slate-600">الموقع: {s.governorate} - {s.area}</p>
-                          <p className="text-[11px] text-slate-600 mt-1">{s.description}</p>
+                          <p className="text-xs text-slate-600 mt-1">{s.description}</p>
                         </div>
-                        <span className="px-2.5 py-1 rounded-xl bg-amber-100 text-amber-800 text-xs font-bold">
+                        <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 text-xs font-bold">
                           طلب معلق
                         </span>
                       </div>
 
-                      <div className="flex gap-2 pt-2 border-t border-amber-200">
+                      <div className="flex gap-2 pt-2 border-t border-slate-100">
                         <button
+                          type="button"
                           onClick={() => updateStoreStatus(s.id, 'approved')}
-                          className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                          className="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                         >
-                          <CheckCircle className="w-4 h-4" />
-                          <span>موافقة واعتماد المتجر</span>
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>اعتماد وتفعيل المتجر</span>
                         </button>
                         <button
+                          type="button"
                           onClick={() => updateStoreStatus(s.id, 'rejected')}
-                          className="py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold transition cursor-pointer"
+                          className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition cursor-pointer"
                         >
                           رفض
                         </button>
@@ -221,25 +240,26 @@ export const AdminScreen: React.FC = () => {
 
             {/* Approved Stores List */}
             <div className="space-y-3 pt-2">
-              <span className="text-sm font-bold text-slate-800 block">المتاجر النشطة المسجلة في الأردن:</span>
+              <span className="text-sm font-bold text-slate-800 block">المتاجر النشطة المسجلة:</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {approvedStores.map((s) => (
                   <div
                     key={s.id}
-                    className="p-4 bg-white border border-slate-200 rounded-3xl flex items-center justify-between gap-3 shadow-xs"
+                    className="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-3 shadow-xs"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <img src={s.logo_url} alt={s.name} className="w-12 h-12 rounded-2xl object-cover shrink-0" />
+                      <img src={s.logo_url} alt={s.name} className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200" />
                       <div className="min-w-0">
-                        <h5 className="font-bold text-sm text-slate-900 truncate">{s.name}</h5>
+                        <h3 className="font-bold text-sm text-slate-900 truncate">{s.name}</h3>
                         <p className="text-xs text-slate-600 truncate">{s.governorate} • {s.store_type}</p>
-                        <span className="text-[10px] text-emerald-700 font-bold">نشط في المنصة</span>
+                        <span className="text-[11px] text-emerald-700 font-bold">نشط في المنصة</span>
                       </div>
                     </div>
 
                     <button
+                      type="button"
                       onClick={() => updateStoreStatus(s.id, 'suspended')}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer"
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer"
                     >
                       إيقاف مؤقت
                     </button>
@@ -253,29 +273,30 @@ export const AdminScreen: React.FC = () => {
         {/* ================= OFFERS TAB ================= */}
         {activeTab === 'offers' && (
           <div className="space-y-4">
-            <h4 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-purple-600" />
-              <span>مراقبة وإدارة كافة العروض في المملكة</span>
-            </h4>
+            <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-emerald-700" />
+              <span>مراقبة وإدارة كافة العروض</span>
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="p-4 bg-white border border-slate-200 rounded-3xl flex items-center justify-between gap-3 shadow-xs"
+                  className="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-3 shadow-xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <img src={offer.image_url} alt={offer.title} className="w-14 h-14 rounded-2xl object-cover shrink-0" />
+                    <img src={offer.image_url} alt={offer.title} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200" />
                     <div className="min-w-0">
-                      <h5 className="font-bold text-sm text-slate-900 truncate">{offer.title}</h5>
+                      <h3 className="font-bold text-sm text-slate-900 truncate">{offer.title}</h3>
                       <p className="text-xs text-slate-600 truncate">{offer.store_name} • {offer.discounted_price.toFixed(2)} د.أ</p>
-                      <span className="text-[10px] text-emerald-700 font-bold">متبقي: {offer.quantity_available} قطع</span>
+                      <span className="text-[11px] text-emerald-700 font-bold">متبقي: {offer.quantity_available} وجبات</span>
                     </div>
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => deleteOffer(offer.id)}
-                    className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition shrink-0 border border-red-200 cursor-pointer"
+                    className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition shrink-0 border border-slate-200 hover:border-red-200 cursor-pointer"
                     title="حذف العرض"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -290,23 +311,23 @@ export const AdminScreen: React.FC = () => {
         {activeTab === 'staff' && (
           <div className="max-w-3xl mx-auto space-y-6">
             <div>
-              <h4 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                <Users className="w-5 h-5 text-purple-600" />
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <Users className="w-5 h-5 text-emerald-700" />
                 <span>إنشاء حسابات الموظفين وتعيين الصلاحيات</span>
-              </h4>
+              </h2>
               <p className="text-xs text-slate-600 mt-0.5 font-medium">
-                تُنشأ هذه الحسابات من خلال الإدارة فقط لتسجيل الدخول عبر البريد الإلكتروني
+                تُنشأ حسابات التشغيل من خلال الإدارة فقط لتسجيل الدخول بكلمات المرور المعتمدة
               </p>
             </div>
 
             {staffCreatedMsg && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-xs text-center font-bold">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs text-center font-bold">
                 {staffCreatedMsg}
               </div>
             )}
 
             {/* New Staff Form */}
-            <form onSubmit={handleAddStaff} className="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-xs">
+            <form onSubmit={handleAddStaff} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">اسم الموظف:</label>
@@ -315,7 +336,7 @@ export const AdminScreen: React.FC = () => {
                     value={newStaffName}
                     onChange={(e) => setNewStaffName(e.target.value)}
                     placeholder="الاسم الكامل"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-purple-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
                     required
                   />
                 </div>
@@ -326,7 +347,7 @@ export const AdminScreen: React.FC = () => {
                     value={newStaffEmail}
                     onChange={(e) => setNewStaffEmail(e.target.value)}
                     placeholder="staff@waffer.jo"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-purple-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
                     required
                   />
                 </div>
@@ -340,7 +361,7 @@ export const AdminScreen: React.FC = () => {
                       type="checkbox"
                       checked={canComplaints}
                       onChange={(e) => setCanComplaints(e.target.checked)}
-                      className="accent-purple-600 rounded w-4 h-4"
+                      className="accent-emerald-600 rounded w-4 h-4"
                     />
                     <span>إدارة ومتابعة الشكاوى</span>
                   </label>
@@ -349,16 +370,16 @@ export const AdminScreen: React.FC = () => {
                       type="checkbox"
                       checked={canTrack}
                       onChange={(e) => setCanTrack(e.target.checked)}
-                      className="accent-purple-600 rounded w-4 h-4"
+                      className="accent-emerald-600 rounded w-4 h-4"
                     />
-                    <span>تتبع الطلبات الميدانية والعالقة</span>
+                    <span>تتبع الطلبات الميدانية</span>
                   </label>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition shadow-xs cursor-pointer"
+                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold transition shadow-xs cursor-pointer"
               >
                 إنشاء وتفعيل حساب الموظف
               </button>
@@ -366,18 +387,18 @@ export const AdminScreen: React.FC = () => {
 
             {/* Staff List */}
             <div className="space-y-3">
-              <span className="text-slate-800 font-bold block text-sm">الموظفين المعتمدين في النظام:</span>
+              <span className="text-slate-800 font-bold block text-sm">الموظفون المعتمدون في النظام:</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {staffList.map((st) => (
                   <div
                     key={st.id}
-                    className="p-4 bg-white border border-slate-200 rounded-2xl flex justify-between items-center shadow-xs"
+                    className="p-4 bg-white border border-slate-200 rounded-xl flex justify-between items-center shadow-xs"
                   >
                     <div>
-                      <h5 className="font-bold text-slate-900 text-sm">{st.name}</h5>
+                      <h3 className="font-bold text-slate-900 text-sm">{st.name}</h3>
                       <p className="text-xs text-slate-600">{st.email} • {st.role}</p>
                     </div>
-                    <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
                       مفعل
                     </span>
                   </div>
@@ -391,38 +412,39 @@ export const AdminScreen: React.FC = () => {
         {activeTab === 'content' && (
           <div className="max-w-2xl mx-auto space-y-6">
             <div>
-              <h4 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-emerald-700" />
                 <span>إدارة محتوى الموقع والإعلانات</span>
-              </h4>
+              </h2>
               <p className="text-xs text-slate-600 mt-0.5 font-medium">
                 تعديل العناوين والشريط الإعلاني المعروض لجميع زوار المنصة
               </p>
             </div>
 
             {bannerSavedMsg && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-xs text-center font-bold">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs text-center font-bold">
                 {bannerSavedMsg}
               </div>
             )}
 
-            <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-xs">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-xs">
               <div>
                 <label className="block text-slate-700 font-bold mb-1.5">شريط الإعلان الرئيسي أعلى الموقع:</label>
                 <textarea
                   value={siteBanner}
                   onChange={(e) => setSiteBanner(e.target.value)}
                   rows={3}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-purple-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
                 />
               </div>
 
               <button
+                type="button"
                 onClick={() => {
-                  setBannerSavedMsg('تم حفظ وتحديث المحتوى في الموقع بنجاح!');
+                  setBannerSavedMsg('تم حفظ وتحديث المحتوى في الموقع بنجاح.');
                   setTimeout(() => setBannerSavedMsg(''), 2000);
                 }}
-                className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer"
+                className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold transition shadow-xs cursor-pointer"
               >
                 حفظ التعديلات في الموقع
               </button>
@@ -433,13 +455,13 @@ export const AdminScreen: React.FC = () => {
         {/* ================= COMPLAINTS TAB ================= */}
         {activeTab === 'complaints' && (
           <div className="space-y-4">
-            <h4 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <AlertOctagon className="w-5 h-5 text-purple-600" />
+            <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+              <AlertOctagon className="w-5 h-5 text-emerald-700" />
               <span>سجل شكاوى المستخدمين والمتاجر</span>
-            </h4>
+            </h2>
 
             {complaints.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 p-6">
+              <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 p-6">
                 <p className="text-slate-600 text-xs">لا توجد شكاوى مسجلة حالياً. سجل الشكاوى نظيف تماماً.</p>
               </div>
             ) : (
@@ -447,26 +469,26 @@ export const AdminScreen: React.FC = () => {
                 {complaints.map((c) => (
                   <div
                     key={c.id}
-                    className="p-5 bg-white border border-slate-200 rounded-3xl space-y-3 shadow-xs"
+                    className="p-5 bg-white border border-slate-200 rounded-2xl space-y-3 shadow-xs"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h5 className="font-bold text-sm text-slate-900">{c.subject}</h5>
+                        <h3 className="font-bold text-sm text-slate-900">{c.subject}</h3>
                         <p className="text-xs text-slate-600 mt-0.5">من: {c.user_name} ({c.user_phone})</p>
                         <p className="text-xs text-slate-600">المتجر: {c.store_name}</p>
                       </div>
-                      <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold">
+                      <span className="px-3 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold">
                         {c.status}
                       </span>
                     </div>
-                    <p className="text-slate-700 text-xs bg-slate-50 p-3 rounded-2xl border border-slate-100">{c.description}</p>
+                    <p className="text-slate-700 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">{c.description}</p>
                   </div>
                 ))}
               </div>
             )}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };
