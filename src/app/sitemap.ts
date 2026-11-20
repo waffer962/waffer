@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { INITIAL_STORES } from '@/lib/mock-data';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://waffer.jo';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wevo.click';
   const now = new Date();
 
   // Core public URLs

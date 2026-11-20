@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://waffer.jo";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wevo.click";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     "حفظ النعمة",
     "food waste jordan",
     "surplus food jordan",
+    "wevo.click",
     "waffer.jo"
   ],
   authors: [{ name: "منصة وفّـر | Waffer Platform", url: siteUrl }],
