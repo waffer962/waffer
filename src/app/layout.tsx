@@ -197,6 +197,8 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Google Identity Services for direct Client-Side Sign-In */}
+        <script src="https://accounts.google.com/gsi/client" async defer />
       </head>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white">
         {children}

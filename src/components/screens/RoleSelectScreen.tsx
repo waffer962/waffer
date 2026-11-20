@@ -8,15 +8,16 @@ import {
   Store as StoreIcon,
   ArrowRight,
   ArrowLeft,
-  CheckCircle2,
-  Phone,
+  Check,
   ShieldCheck,
-  Check
+  Phone,
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 
 export const RoleSelectScreen: React.FC = () => {
   const { googleAuthUser, completeGoogleRegistration, setCurrentScreen } = useApp();
-  const [selectedRole, setSelectedRole] = useState<'customer' | 'store_owner' | null>('customer');
+  const [selectedRole, setSelectedRole] = useState<'customer' | 'store_owner'>('customer');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -44,12 +45,12 @@ export const RoleSelectScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 flex flex-col justify-between p-3 sm:p-6 select-none overflow-y-auto">
+    <div className="min-h-[100dvh] w-full bg-slate-50 text-slate-900 flex flex-col justify-between p-4 sm:p-6 select-none overflow-y-auto">
       
-      {/* Container: Sized perfectly for mobile app view & desktop */}
-      <div className="w-full max-w-lg mx-auto flex flex-col my-auto space-y-4 py-2">
+      {/* Sized perfectly for mobile screens (iPhone, Galaxy) & desktop */}
+      <div className="w-full max-w-md mx-auto flex flex-col my-auto space-y-4 py-2">
         
-        {/* Top Header Bar */}
+        {/* Top Header Navigation */}
         <div className="flex items-center justify-between pb-1">
           <button
             type="button"
@@ -60,18 +61,18 @@ export const RoleSelectScreen: React.FC = () => {
             <span>رجوع</span>
           </button>
 
-          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
+          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-lg">
             الخطوة 2 من 2
           </span>
         </div>
 
-        {/* Brand & Google Account Pill */}
-        <div className="text-center space-y-2.5 pt-1">
+        {/* Brand & Google Account Verified Pill */}
+        <div className="text-center space-y-2 pt-1">
           <WafferLogo size="sm" showText={false} animated={false} className="mx-auto" />
 
           {/* User Verified Pill */}
           {googleAuthUser && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200/90 rounded-full shadow-2xs text-xs max-w-full truncate">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200/90 rounded-full shadow-2xs text-xs max-w-full">
               <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -90,44 +91,46 @@ export const RoleSelectScreen: React.FC = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span className="font-bold text-slate-800 truncate">{googleAuthUser.name}</span>
-              <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-md shrink-0">
+              <span className="font-bold text-slate-800 truncate max-w-[150px] sm:max-w-[200px]">
+                {googleAuthUser.name}
+              </span>
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md shrink-0">
                 <ShieldCheck className="w-3 h-3 text-emerald-600" />
                 موثق
               </span>
             </div>
           )}
 
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               كيف ترغب في استخدام <span className="text-emerald-600">وفّـر</span>؟
             </h2>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
-              اختر نوع حسابك لتخصيص الواجهة المناسبة لك
+            <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+              اختر نوع الحساب ليتم توجيهك فوراً للواجهة المخصصة لاحتياجاتك
             </p>
           </div>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold text-center">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold text-center">
             {error}
           </div>
         )}
 
-        {/* Role Selection Cards: Perfectly Proportioned for Mobile App & Web */}
+        {/* Role Cards: Mobile App Native Architecture */}
         <div className="space-y-3 pt-1">
           
-          {/* Card 1: Customer */}
+          {/* Option 1: Customer Card */}
           <div
             onClick={() => setSelectedRole('customer')}
-            className={`w-full p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between text-right ${
+            className={`w-full p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between text-right active:scale-[0.99] ${
               selectedRole === 'customer'
-                ? 'bg-emerald-50/50 border-emerald-600 shadow-sm ring-1 ring-emerald-600/30'
-                : 'bg-white border-slate-200 hover:border-slate-300'
+                ? 'bg-emerald-50/60 border-emerald-600 shadow-sm ring-1 ring-emerald-600/20'
+                : 'bg-white border-slate-200/90 hover:border-slate-300'
             }`}
           >
-            <div className="flex items-center gap-3.5">
+            <div className="flex items-center gap-3.5 min-w-0 flex-1">
               <div
                 className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition ${
                   selectedRole === 'customer'
@@ -138,21 +141,22 @@ export const RoleSelectScreen: React.FC = () => {
                 <ShoppingBag className="w-5 h-5" />
               </div>
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-black text-slate-900">حساب زبون (توفير وجبات)</h3>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/70 px-1.5 py-0.2 rounded">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 className="text-sm font-black text-slate-900">حساب زبون</h3>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded shrink-0">
                     خصم حتى 70%
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed mt-0.5">
-                  حجز الوجبات اليومية بأسعار مخفضة أو مجانية واستلامها كاش
+                <p className="text-xs text-slate-500 leading-snug mt-1">
+                  حجز وجبات الفائض الطازجة وتوفير ميزانية الطعام
                 </p>
               </div>
             </div>
 
+            {/* Checkmark Circle */}
             <div
-              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition mr-2 ${
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition ms-3 ${
                 selectedRole === 'customer'
                   ? 'border-emerald-600 bg-emerald-600 text-white'
                   : 'border-slate-300 bg-white'
@@ -162,16 +166,16 @@ export const RoleSelectScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: Store Owner */}
+          {/* Option 2: Store Owner Card */}
           <div
             onClick={() => setSelectedRole('store_owner')}
-            className={`w-full p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between text-right ${
+            className={`w-full p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between text-right active:scale-[0.99] ${
               selectedRole === 'store_owner'
-                ? 'bg-emerald-50/50 border-emerald-600 shadow-sm ring-1 ring-emerald-600/30'
-                : 'bg-white border-slate-200 hover:border-slate-300'
+                ? 'bg-emerald-50/60 border-emerald-600 shadow-sm ring-1 ring-emerald-600/20'
+                : 'bg-white border-slate-200/90 hover:border-slate-300'
             }`}
           >
-            <div className="flex items-center gap-3.5">
+            <div className="flex items-center gap-3.5 min-w-0 flex-1">
               <div
                 className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition ${
                   selectedRole === 'store_owner'
@@ -182,21 +186,22 @@ export const RoleSelectScreen: React.FC = () => {
                 <StoreIcon className="w-5 h-5" />
               </div>
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-black text-slate-900">حساب صاحب متجر (شريك)</h3>
-                  <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 className="text-sm font-black text-slate-900">صاحب متجر (شريك)</h3>
+                  <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
                     مطعم / مخبز
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed mt-0.5">
-                  نشر وجبات الفائض، إدارة الطلبات، وتقليل خسائر الهدر
+                <p className="text-xs text-slate-500 leading-snug mt-1">
+                  عرض الفائض اليومي، إدارة الطلبات، والحد من الهدر
                 </p>
               </div>
             </div>
 
+            {/* Checkmark Circle */}
             <div
-              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition mr-2 ${
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition ms-3 ${
                 selectedRole === 'store_owner'
                   ? 'border-emerald-600 bg-emerald-600 text-white'
                   : 'border-slate-300 bg-white'
@@ -207,44 +212,77 @@ export const RoleSelectScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Phone Number Input (Only for Customer) */}
+        {/* Customer Phone Input Field */}
         {selectedRole === 'customer' && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-3.5 space-y-1.5 shadow-2xs animate-in fade-in duration-200">
-            <label className="block text-xs font-bold text-slate-700">
-              رقم الهاتف للتواصل وتأكيد الحجز عند الاستلام:
-            </label>
-            <div className="relative">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-1.5 shadow-2xs animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700">
+                رقم الهاتف للتواصل وتأكيد الحجز:
+              </label>
+              <span className="text-[10px] text-slate-400">اختياري</span>
+            </div>
+            
+            <div className="relative flex items-center">
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="0791234567"
                 dir="ltr"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 pl-9 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition font-mono"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 pl-10 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition font-mono"
               />
-              <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" />
+              <div className="absolute right-2.5 flex items-center gap-1 pointer-events-none text-[11px] font-bold text-slate-500">
+                <span>🇯🇴</span>
+                <span>962+</span>
+              </div>
             </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed pt-0.5">
+              يُستخدم رقم هاتفك فقط لإرسال تفاصيل كود الحجز وتسهيل استلام الوجبة.
+            </p>
           </div>
         )}
 
-        {/* Action Button */}
-        <div className="space-y-2 pt-2">
+        {/* Store Owner Quick Note */}
+        {selectedRole === 'store_owner' && (
+          <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3 text-xs text-amber-800 space-y-1 animate-in fade-in duration-200">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>مرحباً بك كشريك في منصة وفّـر</span>
+            </div>
+            <p className="text-[11px] text-amber-700 leading-relaxed">
+              ستتمكن فور الدخول من تسجيل بيانات متجرك أو فرعك والبدء في نشر عروض الفائض اليومية واستقبال الحجوزات فوراً.
+            </p>
+          </div>
+        )}
+
+        {/* Continue Action Button */}
+        <div className="pt-2">
           <button
             type="button"
             onClick={handleContinue}
-            disabled={!selectedRole || isSubmitting}
-            className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-600/20 active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            disabled={isSubmitting}
+            className="w-full h-12 sm:h-13 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-600/20 active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
           >
-            <span>{isSubmitting ? 'جاري تهيئة الحساب...' : 'المتابعة والدخول إلى وفّـر'}</span>
-            <ArrowLeft className="w-4 h-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>جاري تهيئة الحساب...</span>
+              </>
+            ) : (
+              <>
+                <span>المتابعة والدخول إلى وفّـر</span>
+                <ArrowLeft className="w-4 h-4" />
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Bottom Minimal Note */}
+      {/* Bottom Session Note */}
       <div className="text-center pb-2 pt-2">
         <p className="text-[11px] text-slate-400">
-          يتم حفظ نوع حسابك تلقائياً دون الحاجة لتكرار هذه الخطوة لاحقاً.
+          يتم حفظ نوع حسابك تلقائياً لتدخل مباشرة في المرات القادمة بدون إعادة الاختيار.
         </p>
       </div>
     </div>

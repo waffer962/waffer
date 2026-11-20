@@ -109,6 +109,7 @@ interface AppContextType {
 
   // Auth Helpers
   signInWithGoogle: () => Promise<void>;
+  signInWithGoogleCredential: (idToken: string) => Promise<{ success: boolean; error?: string }>;
   completeGoogleRegistration: (role: 'customer' | 'store_owner', phone?: string) => Promise<void>;
   signInWithOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
   verifyOtp: (email: string, token: string) => Promise<{ success: boolean; error?: string }>;
@@ -745,6 +746,69 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // 1.1 Google ID Token Direct Flow (Client-Side Google Identity Services)
+  const signInWithGoogleCredential = async (idToken: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+      });
+
+      if (error) {
+        console.error('Supabase signInWithIdToken error:', error);
+        return { success: false, error: error.message };
+      }
+
+      if (data?.user) {
+        const user = data.user;
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile && profile.role && profile.role !== 'guest') {
+          const userProfile: Profile = {
+            id: profile.id,
+            email: profile.email || user.email,
+            full_name: profile.full_name || user.user_metadata?.full_name || 'مستخدم وفّر',
+            phone: profile.phone || '',
+            role: profile.role,
+            avatar_url: profile.avatar_url || user.user_metadata?.avatar_url,
+          };
+          setCurrentUser(userProfile);
+          setCurrentUserRole(profile.role);
+          persistSession(userProfile, profile.role);
+          const targetScreen: AppScreen =
+            profile.role === 'store_owner'
+              ? 'store'
+              : profile.role === 'admin'
+              ? 'admin'
+              : profile.role === 'staff'
+              ? 'staff'
+              : 'customer';
+          setCurrentScreen(targetScreen);
+        } else {
+          const gUser: GoogleAuthUser = {
+            id: user.id,
+            email: user.email || '',
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'مستخدم Google',
+            avatar_url: user.user_metadata?.avatar_url,
+          };
+          setGoogleAuthUser(gUser);
+          setCurrentScreen('role_select');
+        }
+      }
+
+      return { success: true };
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error('Sign in with Google ID token failed:', errorMsg);
+      return { success: false, error: errorMsg };
+    }
+  };
+
   // 2. Complete Google Registration (Choose Customer vs Store Owner)
   const completeGoogleRegistration = async (role: 'customer' | 'store_owner', phone?: string) => {
     if (!googleAuthUser) return;
@@ -1060,6 +1124,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addComplaint,
         updateComplaintStatus,
         signInWithGoogle,
+        signInWithGoogleCredential,
         completeGoogleRegistration,
         signInWithOtp,
         verifyOtp,
