@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "google-site-verification-waffer-jordan-2026",
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "googlef637e3f155ba83d0",
   },
   openGraph: {
     type: "website",
