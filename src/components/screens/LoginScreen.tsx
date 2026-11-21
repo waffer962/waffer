@@ -83,14 +83,7 @@ export const LoginScreen: React.FC = () => {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      // If GSI prompt can be shown, trigger it
-      const google = (window as unknown as { google?: { accounts?: { id?: { prompt: () => void } } } }).google;
-      if (google?.accounts?.id && gsiReady) {
-        google.accounts.id.prompt();
-      } else {
-        // Fallback to OAuth redirect
-        await signInWithGoogle();
-      }
+      await signInWithGoogle();
     } catch {
       setErrorMessage('حدث خطأ أثناء الاتصال بخدمة Google، يرجى المحاولة ثانية');
     } finally {

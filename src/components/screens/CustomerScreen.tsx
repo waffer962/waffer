@@ -671,10 +671,17 @@ export const CustomerScreen: React.FC = () => {
                               <div className="flex items-center gap-1.5 truncate">
                                 <span className="font-bold text-slate-800 truncate">{offer.store_name}</span>
                                 <span>•</span>
-                                <span className="flex items-center gap-0.5 text-slate-600 truncate">
+                                <a
+                                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(offer.store_name + ' ' + (offer.store_location || 'الأردن'))}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex items-center gap-0.5 text-emerald-700 hover:text-emerald-900 font-bold hover:underline truncate cursor-pointer"
+                                  title="فتح موقع المتجر في خرائط Google"
+                                >
                                   <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
                                   <span className="truncate">{offer.store_location}</span>
-                                </span>
+                                </a>
                               </div>
                               {isAdmin && (
                                 <button
@@ -1149,7 +1156,16 @@ export const CustomerScreen: React.FC = () => {
                     <div className="flex items-center gap-2 text-xs text-slate-600 mb-1 font-medium">
                       <span className="font-bold text-emerald-700">{selectedOffer.store_name}</span>
                       <span>•</span>
-                      <span>{selectedOffer.store_location}</span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOffer.store_name + ' ' + (selectedOffer.store_location || 'الأردن'))}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 font-bold hover:underline"
+                        title="فتح موقع المتجر في خرائط Google"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{selectedOffer.store_location || 'الموقع في الخريطة'}</span>
+                      </a>
                     </div>
                     <h3 className="text-lg font-black text-slate-900">{selectedOffer.title}</h3>
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">{selectedOffer.description}</p>
@@ -1173,6 +1189,18 @@ export const CustomerScreen: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Direct Google Maps Navigation Button */}
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOffer.store_name + ' ' + (selectedOffer.store_location || 'الأردن'))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition"
+                  >
+                    <Navigation className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>فتح موقع {selectedOffer.store_name} في خرائط Google</span>
+                    <ExternalLink className="w-3 h-3 text-emerald-600" />
+                  </a>
                 </div>
 
                 {/* Left Column: Price calculation & Booking Form */}
