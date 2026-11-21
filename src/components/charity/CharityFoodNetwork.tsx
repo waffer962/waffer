@@ -280,25 +280,26 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
               </button>
             )}
 
-            {/* IoT Simulator Trigger Pill */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsSimulatorOpen(true)}
-                className="group inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/50 rounded-2xl text-xs font-black text-emerald-300 transition shadow-lg cursor-pointer"
-              >
-                <Cpu className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span>لوحة محاكي IoT الذكي</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              </button>
-            </div>
+            {/* IoT Simulator Trigger Pill (Admin Only) */}
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSimulatorOpen(true)}
+                  className="group inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/50 rounded-2xl text-xs font-black text-emerald-300 transition shadow-lg cursor-pointer"
+                >
+                  <Cpu className="w-4 h-4 text-emerald-400" />
+                  <span>محاكي الحساسات (إدارة)</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Hero Titles */}
           <div className="space-y-2 text-center sm:text-right max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold">
               <HeartHandshake className="w-4 h-4 text-emerald-400" />
-              <span>مبادرة وطنية لحفظ النعمة وإطعام الطعام في الأردن 🇯🇴</span>
+              <span>مبادرة وطنية لحفظ النعمة وإطعام الطعام في الأردن</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
@@ -306,15 +307,15 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-              نظام ذكي يربط مطاعم الوجبات المجانية بثلاجات الخير المزودة بحساسات إلكترونية (IoT) داخل مساجد الأردن، لتعرف فوراً وبدقة أين يتوفر الطعام الصالح للاستهلاك دون أن تذهب إلى مكان فارغ.
+              دليل موحد لمطاعم الوجبات المجانية وثلاجات الخير في مساجد الأردن لمساعدتك في العثور على أماكن توفر الطعام مباشرة دون عناء الذهاب لمكان فارغ.
             </p>
           </div>
 
           {/* Nationwide Statistics Metrics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-2">
             
             <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-3 text-center sm:text-right">
-              <span className="text-[10px] text-slate-400 block font-medium">ثلاجات المساجد الذكية</span>
+              <span className="text-[10px] text-slate-400 block font-medium">ثلاجات المساجد</span>
               <span className="text-xl font-black text-white font-mono mt-0.5 block">
                 {stats.totalRefrigerators} ثلاجة
               </span>
@@ -331,13 +332,6 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
               <span className="text-[10px] text-amber-300 block font-medium">فارغة بانتظار التعبئة</span>
               <span className="text-xl font-black text-amber-400 font-mono mt-0.5 block">
                 {stats.emptyRefrigerators} ثلاجة
-              </span>
-            </div>
-
-            <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/80 rounded-2xl p-3 text-center sm:text-right">
-              <span className="text-[10px] text-slate-400 block font-medium">حساس غير متصل</span>
-              <span className="text-xl font-black text-slate-300 font-mono mt-0.5 block">
-                {stats.offlineRefrigerators} جهاز
               </span>
             </div>
 
@@ -377,7 +371,7 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                 }`}
               >
-                <Compass className={`w-4 h-4 ${isLocating ? 'animate-spin' : ''}`} />
+                <Compass className="w-4 h-4" />
                 <span>
                   {isLocating
                     ? 'جاري تحديد موقعك...'
@@ -666,7 +660,7 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
                                 <span
                                   className={`w-2.5 h-2.5 rounded-full ${
                                     isAvail
-                                      ? 'bg-emerald-500 animate-pulse'
+                                      ? 'bg-emerald-500'
                                       : isEmpty
                                       ? 'bg-amber-500'
                                       : 'bg-slate-400'
@@ -677,7 +671,7 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
                                     ? `متوفر طعام (${fridge.estimated_meals_count} وجبة)`
                                     : isEmpty
                                     ? 'الثلاجة فارغة حالياً'
-                                    : 'غير متصل بالشبكة (Offline)'}
+                                    : 'غير متاح للتوزيع حالياً'}
                                 </span>
                               </span>
 
@@ -710,19 +704,15 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
                             </p>
                           </div>
 
-                          {/* IoT Sensor Specs Info */}
+                          {/* Cooling & update info */}
                           <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
                             <span className="flex items-center gap-1">
                               <Thermometer className="w-3 h-3 text-cyan-600" />
-                              <span>{isOffline ? '--' : `${fridge.temperature_celsius}°C`}</span>
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Battery className="w-3 h-3 text-emerald-600" />
-                              <span>{fridge.sensor_battery_level}%</span>
+                              <span>{isOffline ? 'الحرارة: --' : `تبريد محفوظ: ${fridge.temperature_celsius}°C`}</span>
                             </span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3 text-slate-400" />
-                              <span>تحديث الحساس: منذ دقائق</span>
+                              <span>آخر تحديث: قبل قليل</span>
                             </span>
                           </div>
                         </div>
@@ -903,7 +893,7 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
                       ? `يوجد طعام (${selectedFridgeDetail.estimated_meals_count} وجبة)`
                       : selectedFridgeDetail.status === 'empty'
                       ? 'الثلاجة فارغة حالياً'
-                      : 'غير متصل بالشبكة (Offline)'}
+                      : 'غير متاح للتوزيع حالياً'}
                   </span>
                 </div>
 
@@ -933,48 +923,38 @@ export const CharityFoodNetwork: React.FC<CharityFoodNetworkProps> = ({
                 </p>
               </div>
 
-              {/* IoT Telemetry Data Box */}
+              {/* Preservation & Status Box */}
               <div className="p-3.5 bg-slate-900 text-slate-200 rounded-2xl space-y-2.5">
                 <div className="flex items-center justify-between text-xs font-bold text-emerald-400 border-b border-slate-800 pb-1.5">
                   <span className="flex items-center gap-1.5">
-                    <Cpu className="w-4 h-4" />
-                    <span>بيانات جهاز الاستشعار الإلكتروني (IoT Telemetry):</span>
-                  </span>
-                  <span className="font-mono text-[10px] text-slate-400">
-                    {selectedFridgeDetail.sensor_device_id}
+                    <Thermometer className="w-4 h-4 text-cyan-400" />
+                    <span>حالة التبريد وجودة الحفظ:</span>
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-[11px]">
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div>
-                    <span className="text-slate-400 block text-[10px]">درجة الحرارة:</span>
+                    <span className="text-slate-400 block text-[10px]">درجة التبريد:</span>
                     <span className="font-bold text-cyan-400 font-mono">
                       {selectedFridgeDetail.status === 'offline' ? '--' : `${selectedFridgeDetail.temperature_celsius}°C`}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-400 block text-[10px]">البطارية:</span>
-                    <span className="font-bold text-emerald-400 font-mono">
-                      {selectedFridgeDetail.sensor_battery_level}%
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">قوة الإشارة:</span>
-                    <span className="font-bold text-white">
-                      {selectedFridgeDetail.sensor_signal_strength === 'excellent'
-                        ? 'ممتازة'
-                        : selectedFridgeDetail.sensor_signal_strength === 'good'
-                        ? 'جيدة'
-                        : 'منقطعة'}
+                    <span className="text-slate-400 block text-[10px]">حالة التوزيع:</span>
+                    <span className="font-bold text-emerald-400">
+                      {selectedFridgeDetail.status === 'food_available'
+                        ? 'متاح للاستلام'
+                        : selectedFridgeDetail.status === 'empty'
+                        ? 'بانتظار تعبئة طعام جديد'
+                        : 'غير متاح للتوزيع حالياً'}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-[10px] text-slate-400 border-t border-slate-800 pt-1.5 flex items-center justify-between">
-                  <span>آخر إشارة حساس استُلمت:</span>
-                  <span className="text-emerald-400 font-mono">منذ دقائق</span>
+                  <span>آخر تحديث:</span>
+                  <span className="text-emerald-400">قبل قليل</span>
                 </div>
               </div>
 

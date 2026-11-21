@@ -85,8 +85,8 @@ export const CharityMap: React.FC<CharityMapProps> = ({
       {/* Top Map Header Controls */}
       <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
         <div className="pointer-events-auto bg-slate-900/90 backdrop-blur-md border border-slate-700/80 px-3 py-1.5 rounded-2xl flex items-center gap-2 text-white shadow-lg text-xs font-bold">
-          <Compass className="w-4 h-4 text-emerald-400 animate-spin-slow" />
-          <span>خريطة شبكة الخير التفاعلية - المملكة الأردنية الهاشمية</span>
+          <Compass className="w-4 h-4 text-emerald-400" />
+          <span>خريطة المواقع التفاعلية - المملكة الأردنية الهاشمية</span>
         </div>
 
         <div className="pointer-events-auto flex items-center gap-2">
@@ -126,7 +126,7 @@ export const CharityMap: React.FC<CharityMapProps> = ({
 
         {/* Jordan Stylized Geographical Regions Labels */}
         <div className="absolute inset-0 pointer-events-none text-slate-700 font-black text-[10px] sm:text-xs">
-          <span className="absolute top-[8%] left-[70%] tracking-widest uppercase">إربد / الرمثا 🇯🇴</span>
+          <span className="absolute top-[8%] left-[70%] tracking-widest uppercase">إربد / الرمثا</span>
           <span className="absolute top-[18%] left-[80%] tracking-widest uppercase">المفرق / البادية</span>
           <span className="absolute top-[28%] left-[62%] tracking-widest uppercase">جرش وعجلون</span>
           <span className="absolute top-[38%] left-[66%] tracking-widest uppercase text-emerald-500/40 text-sm">العاصمة عمّان</span>
@@ -139,16 +139,14 @@ export const CharityMap: React.FC<CharityMapProps> = ({
           <span className="absolute bottom-[6%] left-[25%] tracking-widest uppercase text-emerald-500/40 text-sm">العقبة / البحر الأحمر</span>
         </div>
 
-        {/* User GPS Location Marker (Pulsing blue radar) */}
+        {/* User GPS Location Marker */}
         {userLocation && (
           <div
             className="absolute -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none"
             style={getCoordinatesPercent(userLocation.lat, userLocation.lng)}
           >
             <div className="relative flex items-center justify-center">
-              <span className="absolute w-8 h-8 rounded-full bg-blue-500/30 animate-ping" />
-              <span className="absolute w-5 h-5 rounded-full bg-blue-500/50" />
-              <span className="w-3 h-3 rounded-full bg-blue-400 border-2 border-white shadow-md" />
+              <span className="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white shadow-md" />
             </div>
             <span className="absolute top-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-900/90 text-blue-200 border border-blue-600/60 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
               موقعك الحالي
@@ -173,11 +171,6 @@ export const CharityMap: React.FC<CharityMapProps> = ({
               title={`${fridge.mosque_name} (${fridge.status})`}
             >
               <div className="relative flex items-center justify-center">
-                {/* Glow ring if food is available */}
-                {isAvailable && (
-                  <span className="absolute -inset-1.5 rounded-full bg-emerald-500/40 animate-pulse" />
-                )}
-
                 {/* Marker Body */}
                 <div
                   className={`w-7 h-7 sm:w-8 sm:h-8 rounded-2xl flex items-center justify-center shadow-lg border-2 transition ${
@@ -219,7 +212,6 @@ export const CharityMap: React.FC<CharityMapProps> = ({
               title={`${rest.name} (${rest.available_meals_today} وجبة)`}
             >
               <div className="relative flex items-center justify-center">
-                <span className="absolute -inset-1 rounded-full bg-orange-500/30 animate-pulse" />
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-2xl bg-orange-600 border-2 border-orange-300 text-white flex items-center justify-center shadow-lg">
                   <Utensils className="w-3.5 h-3.5" />
                 </div>
@@ -306,7 +298,7 @@ export const CharityMap: React.FC<CharityMapProps> = ({
                       >
                         <span
                           className={`w-2 h-2 rounded-full ${
-                            isAvail ? 'bg-emerald-400 animate-pulse' : isEmpty ? 'bg-amber-400' : 'bg-slate-400'
+                            isAvail ? 'bg-emerald-400' : isEmpty ? 'bg-amber-400' : 'bg-slate-400'
                           }`}
                         />
                         <span>
@@ -454,7 +446,7 @@ export const CharityMap: React.FC<CharityMapProps> = ({
 
         <div className="text-[10px] text-slate-500 flex items-center gap-1">
           <Sparkles className="w-3 h-3 text-emerald-400" />
-          <span>تحديث مباشر من حساسات إنترنت الأشياء (IoT)</span>
+          <span>بيانات محدثة لأماكن التوزيع</span>
         </div>
       </div>
     </div>

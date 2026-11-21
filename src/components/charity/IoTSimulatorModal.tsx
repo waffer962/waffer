@@ -223,7 +223,7 @@ export const IoTSimulatorModal: React.FC<IoTSimulatorModalProps> = ({
         <div className="p-4 sm:p-5 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
-              <Cpu className="w-5 h-5 animate-pulse" />
+              <Cpu className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -402,7 +402,7 @@ export const IoTSimulatorModal: React.FC<IoTSimulatorModalProps> = ({
                 onClick={toggleAutoPulse}
                 className={`w-full p-3 rounded-2xl border font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
                   isAutoPulsing
-                    ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg animate-pulse'
+                    ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg'
                     : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
                 }`}
               >
