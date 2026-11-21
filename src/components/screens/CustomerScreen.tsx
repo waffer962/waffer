@@ -37,9 +37,12 @@ import {
   Save,
   Plus,
   Check,
-  Key
+  Key,
+  HeartHandshake,
+  Cpu
 } from 'lucide-react';
 import { WafferLogo } from '@/components/ui/WafferLogo';
+import { CharityFoodNetwork } from '@/components/charity/CharityFoodNetwork';
 
 export const CustomerScreen: React.FC = () => {
   const {
@@ -64,7 +67,7 @@ export const CustomerScreen: React.FC = () => {
   } = useApp();
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'home' | 'search' | 'reservations' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'search' | 'reservations' | 'profile' | 'charity'>('home');
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -318,6 +321,20 @@ export const CustomerScreen: React.FC = () => {
               <span>الرئيسية</span>
             </button>
 
+            {/* Nationwide Charity Network Tab */}
+            <button
+              onClick={() => setActiveTab('charity')}
+              className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 font-bold cursor-pointer ${
+                activeTab === 'charity'
+                  ? 'bg-emerald-700 text-white shadow-xs'
+                  : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200'
+              }`}
+            >
+              <HeartHandshake className="w-4 h-4 text-emerald-600" />
+              <span>شبكة الخير (وجبات وثلاجات المساجد)</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            </button>
+
             <button
               onClick={() => setActiveTab('search')}
               className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
@@ -440,7 +457,13 @@ export const CustomerScreen: React.FC = () => {
       </div>
 
       {/* ===================== MAIN CONTENT CONTAINER ===================== */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4 md:pt-6">
+      {activeTab === 'charity' ? (
+        <CharityFoodNetwork
+          onBackToHome={() => setActiveTab('home')}
+          isAdmin={isAdmin}
+        />
+      ) : (
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4 md:pt-6">
         
         {/* ====================== TAB 1: HOME ====================== */}
         {activeTab === 'home' && (
@@ -473,6 +496,40 @@ export const CustomerScreen: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* ===================== CHARITY FOOD NETWORK NATIONWIDE BANNER ===================== */}
+            <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white rounded-3xl p-5 sm:p-6 border border-emerald-800/60 shadow-md flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                  <HeartHandshake className="w-6 h-6 animate-pulse" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      مبادرة وطنية ذكية 🇯🇴
+                    </span>
+                    <span className="text-[10px] text-cyan-300 font-mono font-bold">
+                      Smart Mosque Refrigerators (IoT)
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    شبكة ثلاجات الخير في المساجد ومطاعم الوجبات المجانية
+                  </h3>
+                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                    استكشف ثلاجات الخير المزودة بحساسات إلكترونية ذكية داخل مساجد الأردن واعرف أماكن توفر الطعام لحظياً وبالخريطة التفاعلية دون عناء الذهاب لمكان فارغ.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('charity')}
+                className="py-3 px-5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-lg transition active:scale-[0.98] cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <span>استكشف شبكة الخير والخريطة</span>
+                <Navigation className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Food Categories Pills */}
@@ -995,6 +1052,7 @@ export const CustomerScreen: React.FC = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* ====================== OFFER DETAILS & BOOKING MODAL ====================== */}
       {selectedOffer && (
@@ -1795,6 +1853,20 @@ export const CustomerScreen: React.FC = () => {
         >
           <Home className="w-5 h-5" />
           <span className="text-[10px]">الرئيسية</span>
+        </button>
+
+        {/* Charity Network for Mobile */}
+        <button
+          onClick={() => setActiveTab('charity')}
+          className={`flex flex-col items-center gap-1 transition cursor-pointer relative ${
+            activeTab === 'charity' ? 'text-emerald-700 font-black' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <div className="relative">
+            <HeartHandshake className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
+          <span className="text-[10px] font-bold">شبكة الخير</span>
         </button>
 
         <button

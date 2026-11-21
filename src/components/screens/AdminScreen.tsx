@@ -16,8 +16,13 @@ import {
   Edit3,
   LogOut,
   Bell,
-  Check
+  Check,
+  Radio,
+  HeartHandshake
 } from 'lucide-react';
+import { AdminCharityManager } from '@/components/charity/AdminCharityManager';
+import { INITIAL_CHARITY_REFRIGERATORS, INITIAL_FREE_RESTAURANTS } from '@/lib/data/charity-data';
+import { CharityRefrigerator, FreeFoodRestaurant } from '@/types/charity';
 
 export const AdminScreen: React.FC = () => {
   const {
@@ -31,7 +36,11 @@ export const AdminScreen: React.FC = () => {
     setCurrentScreen
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'stores' | 'offers' | 'staff' | 'content' | 'complaints'>('stores');
+  const [activeTab, setActiveTab] = useState<'stores' | 'offers' | 'staff' | 'content' | 'complaints' | 'charity'>('stores');
+
+  // Charity Network State
+  const [refrigerators, setRefrigerators] = useState<CharityRefrigerator[]>(INITIAL_CHARITY_REFRIGERATORS);
+  const [restaurants, setRestaurants] = useState<FreeFoodRestaurant[]>(INITIAL_FREE_RESTAURANTS);
 
   // Staff creation form
   const [newStaffEmail, setNewStaffEmail] = useState('');
@@ -172,6 +181,19 @@ export const AdminScreen: React.FC = () => {
             }`}
           >
             سجل الشكاوى ({complaints.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('charity')}
+            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'charity'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5 text-emerald-400" />
+            <span>ثلاجات الخير وحساسات IoT ({refrigerators.length})</span>
           </button>
         </nav>
       </header>
@@ -487,6 +509,16 @@ export const AdminScreen: React.FC = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* Tab: Charity Network & IoT Management */}
+        {activeTab === 'charity' && (
+          <AdminCharityManager
+            refrigerators={refrigerators}
+            restaurants={restaurants}
+            onUpdateRefrigerators={setRefrigerators}
+            onUpdateRestaurants={setRestaurants}
+          />
         )}
       </main>
     </div>
